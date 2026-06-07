@@ -1,6 +1,6 @@
 # VIX Strategy – Product Requirements Document (PRD)
 
-**Version:** 1.0.0  
+**Version:** 1.0.7  
 **Status:** MVP Draft  
 **Last Updated:** 2026-06-06  
 

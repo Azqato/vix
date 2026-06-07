@@ -2,7 +2,7 @@
 
 > *Fear is a signal. Use it.*
 
-**Current version: v1.0.4**
+**Current version: v1.0.7**
 
 A rules-based, browser-only portfolio strategy dashboard that uses the CBOE VIX (Volatility Index) to dynamically compute ETF allocations in real time. Built for GitHub Pages with zero backend.
 

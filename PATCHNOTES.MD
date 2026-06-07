@@ -95,4 +95,11 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.7] – 2026-06-06
+
+### Changed
+- `strategy.html` – Timestamp display on the VIX feed now renders in Eastern Time (`America/New_York`) with the timezone abbreviation shown (EST or EDT). Previously used the browser's local timezone with no label.
+
+---
+
 *This file is updated after every change. Do not skip versions.*
