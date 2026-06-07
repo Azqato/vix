@@ -64,4 +64,19 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.4] – 2026-06-06
+
+### Changed
+- `assets/js/vix.js` – Replaced `sessionStorage` with `localStorage` so the last-known VIX value persists across tabs, pages, and browser sessions. Added `getCachedVIX()` sync export for instant reads without a network round-trip. Added `stale` flag to return objects: when the live fetch fails but a prior value exists, it is returned with `stale: true` rather than showing an error.
+- `index.html` – Hero gauge now shows the live/cached VIX value instead of the hardcoded static `18.4`. Reads `localStorage` synchronously on load (zero network wait), then updates if a fresh fetch succeeds. Tier badge updates to match the live tier.
+- `strategy.html` – Added `STALE` badge state (red, distinct from `ERROR`). Dashboard now paints the last-known value from `localStorage` instantly on load before the async fetch resolves, so the page is never blank. Refresh button now clears `localStorage` (was incorrectly clearing `sessionStorage`).
+
+### Fixed
+- `index.html` – Static `18.4` placeholder replaced with live data wired to the same `localStorage` cache as `strategy.html`
+
+### Note on local development
+- ES modules require an HTTP server — opening HTML files directly via `file://` protocol will block module imports. Use VS Code Live Server or `python -m http.server 8080`.
+
+---
+
 *This file is updated after every change. Do not skip versions.*

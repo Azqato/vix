@@ -276,7 +276,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script type="module">
-  import { fetchVIX }                               from './assets/js/vix.js';
+  import { getCachedVIX, fetchVIX }                 from './assets/js/vix.js';
   import { getTier, getAllocation, getTierLabel, TICKERS, ALL_TIERS } from './assets/js/strategy.js';
   import { initChart, updateChart }                 from './assets/js/chart.js';
 
@@ -296,6 +296,7 @@
     const map = {
       live:    { text: 'LIVE',    cls: 'badge-live'   },
       cached:  { text: 'CACHED', cls: 'badge-cached' },
+      stale:   { text: 'STALE',  cls: 'badge-error'  },
       error:   { text: 'ERROR',  cls: 'badge-error'  },
       loading: { text: 'LOADING', cls: 'badge-cached' },
     };
@@ -324,7 +325,7 @@
     if (timestampEl) {
       timestampEl.textContent = `Last updated: ${formatTimestamp(data.timestamp)}`;
     }
-    setStatus(data.fromCache ? 'cached' : 'live');
+    setStatus(data.stale ? 'stale' : data.fromCache ? 'cached' : 'live');
   }
 
   function updateTierBanner(tier, vixValue) {
@@ -402,15 +403,34 @@
     }
   }
 
+  // Paint last-known value from localStorage before any network call so the
+  // page never shows -- while waiting for the proxy to respond.
+  function paintCached() {
+    const cached = getCachedVIX();
+    if (!cached) {
+      renderTierReference(null);
+      return;
+    }
+    updateVIXDisplay(cached);
+    const tier       = getTier(cached.value);
+    const allocation = getAllocation(tier);
+    updateTierBanner(tier, cached.value);
+    updateLegend(allocation);
+    updateAllocationTable(allocation);
+    renderTierReference(tier);
+    chartInstance = initChart('allocationChart');
+    updateChart(chartInstance, allocation, cached.value);
+  }
+
   // Boot — type="module" scripts are deferred and run after DOM is parsed,
   // so DOMContentLoaded has already fired by the time imports resolve.
   // Run directly instead of waiting for an event that will never come.
   (async () => {
-    renderTierReference(null);
-    await refresh();
+    paintCached();          // instant — zero network wait
+    await refresh();        // fetch fresh, then update
 
     document.getElementById('refresh-btn')?.addEventListener('click', async () => {
-      sessionStorage.removeItem('vix_cache');
+      localStorage.removeItem('vix_last_known');
       await refresh();
     });
 
