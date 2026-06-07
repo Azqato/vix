@@ -2,7 +2,7 @@
 
 > *Fear is a signal. Use it.*
 
-**Current version: v1.0.1**
+**Current version: v1.0.4**
 
 A rules-based, browser-only portfolio strategy dashboard that uses the CBOE VIX (Volatility Index) to dynamically compute ETF allocations in real time. Built for GitHub Pages with zero backend.
 
@@ -23,7 +23,7 @@ There is no server, no login, no database. Everything runs in the browser.
 
 The core idea: **the VIX is a mean-reverting fear gauge**. When markets panic, VIX spikes. Historically, elevated VIX precedes the strongest market recoveries. This strategy mechanically tilts toward more aggressive leveraged ETF exposure precisely when fear is highest, and reduces risk when markets are calm.
 
-### Allocation Table (v1.0.1 — Live)
+### Allocation Table (v1.0.4 — Live)
 
 | VIX Range | BIL | SPY | QQQ | TQQQ |
 |-----------|-----|-----|-----|------|
@@ -66,11 +66,11 @@ This app has no bundler, no Node.js, no npm. Open `index.html` in a browser and 
 
 ### JavaScript Architecture
 
-All three JS files (`vix.js`, `strategy.js`, `chart.js`) are ES Modules loaded via `<script type="module">` in `strategy.html`. Chart.js is loaded separately as a synchronous UMD script which sets `window.Chart` before the module executes.
+All three JS files (`vix.js`, `strategy.js`, `chart.js`) are ES Modules. `strategy.html` loads them via `<script type="module">`. `index.html` imports `vix.js` and `strategy.js` for its hero gauge. Chart.js is loaded as a synchronous UMD script (sets `window.Chart` globally) before any module executes.
 
-- **`vix.js`** — exports `fetchVIX()`. Handles fetch, cache check, primary/fallback URL, and error return shape.
-- **`strategy.js`** — exports tier logic, allocation data, ticker metadata, and the full `ALL_TIERS` reference array.
-- **`chart.js`** — exports `initChart()` and `updateChart()`. Includes a custom Chart.js plugin that renders the live VIX value in the doughnut center hole.
+- **`vix.js`** — exports `getCachedVIX()` (synchronous localStorage read, zero network wait) and `fetchVIX()` (async, tries proxy URLs in order). Returns `{ value, timestamp, fromCache, stale }` on success, or `{ error: true }` on total failure. When the live fetch fails but a prior value exists in localStorage, it returns that value with `stale: true` rather than an error.
+- **`strategy.js`** — exports `getTier()`, `getAllocation()`, `getTierLabel()`, `TICKERS` metadata, and the full `ALL_TIERS` reference array.
+- **`chart.js`** — exports `initChart()` and `updateChart()`. Includes a custom Chart.js plugin that renders the live VIX value as a center label inside the doughnut hole.
 
 ### VIX Data Fetching
 
@@ -83,7 +83,15 @@ Fallback: https://api.allorigins.win/raw?url=https://query2.finance.yahoo.com/v8
 
 > **Note:** `corsproxy.io` was the original proxy but is blocked by Yahoo Finance (returns 403). `allorigins.win` is confirmed working as of v1.0.2.
 
-The fetched value is cached in `sessionStorage` under the key `vix_cache` for 60 seconds to avoid hammering the proxy. If all endpoints fail, the UI shows an ERROR badge and `--` for the VIX value. The manual Refresh button clears the cache and forces a new fetch.
+The fetched value is saved to `localStorage` under the key `vix_last_known` with no expiry — it persists across tabs, pages, and browser sessions. Both `index.html` and `strategy.html` read this cache synchronously on load so they always show the last real value instantly, with no blank or `--` state while waiting for the network.
+
+**Refresh logic:**
+- Cache younger than 60 seconds → return immediately, no fetch
+- Cache older than 60 seconds → attempt live fetch; if it succeeds, update cache and display; if it fails, return the stale value with a `STALE` badge instead of an error
+
+**Status badges:** `LIVE` (green) — fresh fetch · `CACHED` (amber) — within TTL · `STALE` (red) — fetch failed, showing last known value · `ERROR` (red) — fetch failed and no prior value exists
+
+The manual Refresh button clears `localStorage` and forces a new fetch.
 
 ---
 
@@ -97,7 +105,7 @@ vix-strategy/
 │   ├── css/
 │   │   └── styles.css      # Global styles and CSS variables
 │   ├── js/
-│   │   ├── vix.js          # VIX fetching and sessionStorage caching
+│   │   ├── vix.js          # VIX fetching, localStorage caching, getCachedVIX()
 │   │   ├── chart.js        # Pie/donut chart rendering logic
 │   │   └── strategy.js     # Tier logic and allocation computation
 │   └── img/
@@ -122,11 +130,16 @@ No build action required. The site goes live as-is.
 
 ## Running Locally
 
-Simply open `index.html` in a modern browser. No server needed for most features.
+**A local HTTP server is required.** ES modules are blocked by all modern browsers when opened via the `file://` protocol, so double-clicking `index.html` will not work — the JS will silently fail to load.
 
-> **Note:** CORS proxy calls are blocked on the `file://` protocol. Use a local HTTP server for full API functionality during development:
-> - **VS Code:** install the Live Server extension, right-click `index.html` → Open with Live Server
-> - **Python:** `python -m http.server 8080` then open `http://localhost:8080`
+Use one of these options:
+
+| Method | Command | URL |
+|--------|---------|-----|
+| VS Code Live Server | Right-click `index.html` → Open with Live Server | `http://127.0.0.1:5500` |
+| Python | `python -m http.server 8080` | `http://localhost:8080` |
+
+Once the server is running, the VIX fetch will work and the value will be saved to `localStorage`. Subsequent visits (including direct file opens on GitHub Pages) will show the last-known value instantly while the fresh fetch runs in the background.
 
 ---
 

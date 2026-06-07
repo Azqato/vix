@@ -170,17 +170,18 @@ https://api.allorigins.win/raw?url=https://query2.finance.yahoo.com/v8/finance/c
 - `chart.result[0].meta.regularMarketPrice` → Current VIX value
 - `chart.result[0].meta.regularMarketTime` → Last updated timestamp
 
-**Caching:** Store last fetched value and timestamp in `sessionStorage` to limit redundant API calls within the same session. Refresh interval: 60 seconds.
+**Caching:** Store last fetched value and timestamp in `localStorage` under key `vix_last_known`. Unlike `sessionStorage`, this persists across tabs, pages, and browser sessions, allowing both `index.html` and `strategy.html` to read the same last-known value synchronously on load. Refresh interval: 60 seconds.
 
 **Error Handling:**
-- If fetch fails, display last known value with a warning badge
-- If no data available, show a fallback message with manual refresh button
+- If fetch fails and a prior cached value exists, display it with a `STALE` badge
+- If fetch fails and no cached value exists, show `ERROR` badge and `--` value with a manual refresh button
+- Manual refresh button clears `localStorage` and forces a new live fetch
 
 ---
 
 ### 6.3 Chart.js Integration
 
-- Load Chart.js via CDN: `https://cdn.jsdelivr.net/npm/chart.js`
+- Load Chart.js via CDN (pinned): `https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js`
 - Chart type: Doughnut (pie with center label showing VIX value)
 - Colors: Consistent palette per ticker, matching CSS variables
 - Responsive: Scales to mobile viewport
