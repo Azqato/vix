@@ -402,8 +402,10 @@
     }
   }
 
-  // Boot
-  document.addEventListener('DOMContentLoaded', async () => {
+  // Boot — type="module" scripts are deferred and run after DOM is parsed,
+  // so DOMContentLoaded has already fired by the time imports resolve.
+  // Run directly instead of waiting for an event that will never come.
+  (async () => {
     renderTierReference(null);
     await refresh();
 
@@ -413,7 +415,7 @@
     });
 
     setInterval(refresh, 60_000);
-  });
+  })();
 </script>
 
 </body>

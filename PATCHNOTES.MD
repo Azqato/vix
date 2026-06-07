@@ -57,4 +57,11 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.3] – 2026-06-06
+
+### Fixed
+- `strategy.html` – Dashboard never booted on GitHub Pages (page stuck on LOADING forever). Root cause: `DOMContentLoaded` listener inside a `type="module"` script is a race condition — the browser must fetch and resolve all static imports before the module executes, by which point `DOMContentLoaded` has already fired and the callback never runs. Fixed by replacing the listener with a direct async IIFE; `type="module"` scripts are deferred by spec and always run post-DOM-parse, so no event listener is needed.
+
+---
+
 *This file is updated after every change. Do not skip versions.*
