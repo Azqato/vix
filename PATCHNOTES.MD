@@ -79,4 +79,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.5] – 2026-06-06
+
+### Documentation
+- `README.MD` – Updated version badge to v1.0.4; rewrote JS Architecture section to document `getCachedVIX()`, `stale` flag, and cross-page `localStorage` behaviour; rewrote VIX Data Fetching section with full `LIVE` / `CACHED` / `STALE` / `ERROR` badge state definitions; updated repo structure comment; rewrote Running Locally section to clearly state a local HTTP server is required (ES modules blocked on `file://`) with a setup table
+- `PRD.MD` – Updated caching spec from `sessionStorage` to `localStorage`; added `STALE` state to error handling spec; pinned Chart.js CDN version to `4.4.0` in integration section
+
+---
+
 *This file is updated after every change. Do not skip versions.*
