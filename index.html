@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIX Strategy — Fear Is a Signal. Use It.</title>
+  <meta name="description" content="A rules-based, VIX-driven portfolio strategy. Real-time ETF allocations that increase growth exposure when market fear peaks.">
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="VIX Strategy — Fear Is a Signal. Use It.">
+  <meta property="og:description" content="Dynamic ETF allocations driven by the CBOE VIX. More aggressive exposure when fear is highest.">
+  <meta property="og:type"        content="website">
+  <meta property="og:image"       content="assets/img/logo.svg">
+
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<!-- ============================================================
+     Navigation
+     ============================================================ -->
+<header class="site-header">
+  <nav class="nav-container" aria-label="Main navigation">
+    <a href="index.html" class="nav-brand">
+      <img src="assets/img/logo.svg" alt="VIX Strategy" class="nav-logo">
+      <span class="nav-title">VIX Strategy</span>
+    </a>
+    <a href="strategy.html" class="btn-primary">Live Dashboard →</a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ============================================================
+       Hero
+       ============================================================ -->
+  <section id="hero" class="hero-section">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge badge-live" aria-label="Live market data indicator">LIVE MARKET DATA</span>
+        </div>
+
+        <h1 class="hero-headline">Fear Is a Signal.<br>Use It.</h1>
+
+        <p class="hero-subheadline">
+          A rules-based, contrarian portfolio strategy that mechanically
+          increases exposure to growth ETFs when market fear peaks —
+          and pulls back when complacency sets in.
+        </p>
+
+        <div class="hero-gauge-wrapper" aria-label="Example VIX gauge display">
+          <div class="vix-gauge-display">
+            <div class="gauge-label">CBOE VIX</div>
+            <div class="gauge-value" aria-label="Example VIX value: 18.4">18.4</div>
+            <div class="gauge-sublabel">Volatility Index</div>
+          </div>
+          <div class="gauge-tier-indicator">
+            <span class="badge badge-tier2">Tier 2 — Moderate Fear</span>
+            <span class="text-secondary" style="font-size:0.85rem;">QQQ &amp; TQQQ increase<br>as this number rises</span>
+          </div>
+        </div>
+
+        <a href="strategy.html" class="btn-primary btn-large">See the Live Strategy →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       The Problem
+       ============================================================ -->
+  <section id="problem" class="section">
+    <div class="container">
+      <h2 class="section-title">The Problem With Buy and Hold</h2>
+      <p class="section-lead">
+        Static allocation strategies leave performance on the table
+        during the market's most important moments — the crashes that
+        precede the fastest recoveries.
+      </p>
+
+      <div class="problem-grid">
+        <div class="card">
+          <div class="card-icon text-accent-red">⚡</div>
+          <h3>Volatility Spikes Are Inevitable</h3>
+          <p>
+            The S&amp;P 500 experiences VIX spikes above 30 roughly every
+            2–3 years. Most investors panic-sell at exactly the wrong moment,
+            locking in losses at the bottom.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon text-accent-amber">📉</div>
+          <h3>Static Portfolios Don't Adapt</h3>
+          <p>
+            A fixed 60/40 or 100% equity allocation has no mechanism to
+            respond to opportunity. It rides fear down — but doesn't
+            press its advantage when the signal is clearest.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon text-accent-green">📈</div>
+          <h3>Recoveries Are Fastest After Peak Fear</h3>
+          <p>
+            Historically, the 12 months following a VIX spike above 35
+            contain some of the strongest equity returns ever recorded.
+            The opportunity is there — if you are positioned for it.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       The Insight
+       ============================================================ -->
+  <section id="insight" class="section section-alt">
+    <div class="container">
+      <h2 class="section-title">The Insight: VIX Is Mean-Reverting</h2>
+      <p class="section-lead">
+        The CBOE VIX measures 30-day implied volatility derived from
+        S&amp;P 500 options prices. It is not a directional predictor —
+        it is a precise, real-time measure of collective market fear.
+      </p>
+
+      <div class="insight-grid">
+        <div class="insight-stat">
+          <div class="stat-value text-accent-green">~80</div>
+          <div class="stat-label">VIX peak during 2008–2009 Financial Crisis</div>
+        </div>
+        <div class="insight-stat">
+          <div class="stat-value text-accent-green">~85</div>
+          <div class="stat-label">VIX peak during 2020 COVID-19 crash</div>
+        </div>
+        <div class="insight-stat">
+          <div class="stat-value text-accent-green">12–15</div>
+          <div class="stat-label">Typical "complacency" range in bull markets</div>
+        </div>
+      </div>
+
+      <p>
+        Every time the VIX has spiked above 40, it has reverted to its
+        long-term mean of roughly 20 within 12–18 months. The question
+        is not <em>if</em> the market recovers — it is whether you are
+        positioned to capture it.
+      </p>
+
+      <blockquote class="insight-quote">
+        <p>"Be greedy when others are fearful." — Warren Buffett</p>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       The Strategy
+       ============================================================ -->
+  <section id="strategy" class="section">
+    <div class="container">
+      <h2 class="section-title">The Strategy: 5 VIX Tiers, 4 ETFs</h2>
+      <p class="section-lead">
+        As the VIX rises, allocations mechanically shift away from
+        T-Bills and toward leveraged growth ETFs — maximizing recovery
+        capture precisely when fear is highest.
+      </p>
+
+      <div class="table-wrapper">
+        <table class="table-styled" aria-label="VIX tier allocation table">
+          <thead>
+            <tr>
+              <th>VIX Range</th>
+              <th>BIL <span class="ticker-desc">(T-Bill)</span></th>
+              <th>SPY <span class="ticker-desc">(S&P 500)</span></th>
+              <th>QQQ <span class="ticker-desc">(Nasdaq-100)</span></th>
+              <th>TQQQ <span class="ticker-desc">(3× Nasdaq)</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="tier-row" data-tier="tier1">
+              <td class="tier-label">VIX &lt; 15<span class="fear-label">Low Fear</span></td>
+              <td class="data-value">25.00%</td>
+              <td class="data-value">50.00%</td>
+              <td class="data-value">20.00%</td>
+              <td class="data-value">5.00%</td>
+            </tr>
+            <tr class="tier-row" data-tier="tier2">
+              <td class="tier-label">VIX 15–25<span class="fear-label">Moderate Fear</span></td>
+              <td class="data-value">20.00%</td>
+              <td class="data-value">40.00%</td>
+              <td class="data-value">30.00%</td>
+              <td class="data-value">10.00%</td>
+            </tr>
+            <tr class="tier-row" data-tier="tier3">
+              <td class="tier-label">VIX 25–35<span class="fear-label">Elevated Fear</span></td>
+              <td class="data-value">15.00%</td>
+              <td class="data-value">35.00%</td>
+              <td class="data-value">35.00%</td>
+              <td class="data-value">15.00%</td>
+            </tr>
+            <tr class="tier-row" data-tier="tier4">
+              <td class="tier-label">VIX 35–45<span class="fear-label">High Fear</span></td>
+              <td class="data-value">10.00%</td>
+              <td class="data-value">30.00%</td>
+              <td class="data-value">40.00%</td>
+              <td class="data-value">20.00%</td>
+            </tr>
+            <tr class="tier-row" data-tier="tier5">
+              <td class="tier-label">VIX &gt; 45<span class="fear-label">Extreme Fear</span></td>
+              <td class="data-value">5.00%</td>
+              <td class="data-value">20.00%</td>
+              <td class="data-value">50.00%</td>
+              <td class="data-value">25.00%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="table-note">
+        All allocations normalized to 100%. Rebalance monthly on the first
+        trading day, or whenever the VIX crosses into a new tier.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Why Now
+       ============================================================ -->
+  <section id="why-now" class="section section-alt">
+    <div class="container">
+      <h2 class="section-title">Why Now: The AI &amp; Semiconductor Supercycle</h2>
+      <p class="section-lead">
+        QQQ and TQQQ carry heavy weighting in AI infrastructure,
+        semiconductor, and cloud computing — sectors at the center of a
+        multi-decade secular growth cycle.
+      </p>
+
+      <div class="why-grid">
+        <div class="card">
+          <h3>AI Infrastructure Buildout</h3>
+          <p>
+            NVIDIA, Microsoft, Alphabet, Amazon, and Meta are each spending
+            hundreds of billions annually on AI compute. These companies
+            dominate QQQ's top holdings — and the capital expenditure is
+            just beginning.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Structural Semiconductor Demand</h3>
+          <p>
+            AI training, inference, EVs, IoT, and data center expansion are
+            creating demand for semiconductors that will persist for decades.
+            Every major technology trend requires more silicon.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Leverage + Time + Discipline</h3>
+          <p>
+            TQQQ introduces volatility decay. Over a 10+ year horizon with
+            systematic rebalancing at fear peaks, compounding can overcome
+            that decay — provided the underlying index continues its
+            long-term growth trend.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Risk Disclosure
+       ============================================================ -->
+  <section id="risk" class="section risk-section">
+    <div class="container">
+      <h2 class="section-title">⚠ Risk Disclosure</h2>
+
+      <div class="risk-card card">
+        <p class="risk-lead">This strategy carries significant risk. Read this before proceeding.</p>
+
+        <ul class="risk-list" aria-label="Risk factors">
+          <li>
+            <strong>Leveraged ETF Decay:</strong> TQQQ uses daily rebalanced
+            3× leverage. In choppy or sideways markets it loses value even
+            when the underlying index is flat. This volatility decay is
+            permanent and structural.
+          </li>
+          <li>
+            <strong>Severe Drawdowns:</strong> TQQQ lost approximately 80%
+            during the 2022 bear market and over 90% during COVID-19. You
+            must be prepared to hold — or add — through drawdowns of this
+            magnitude without panic-selling.
+          </li>
+          <li>
+            <strong>10+ Year Horizon Required:</strong> This strategy is not
+            suitable for capital you may need within five years. Leveraged ETFs
+            require time and compounding to recover from major drawdowns.
+          </li>
+          <li>
+            <strong>Rebalancing Discipline:</strong> The strategy only works
+            if you execute rebalances mechanically. Emotional deviation during
+            drawdowns permanently impairs the compounding advantage.
+          </li>
+          <li>
+            <strong>Concentration Risk:</strong> Heavy exposure to tech and
+            Nasdaq. A prolonged tech bear market or regulatory crackdown on
+            large-cap tech would severely impact strategy returns.
+          </li>
+        </ul>
+
+        <p class="disclaimer-text">
+          This is not financial advice. For educational and informational
+          purposes only. Past performance is not indicative of future results.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     Footer
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-cta">
+      <p>Ready to see what the current VIX says about your allocation?</p>
+      <a href="strategy.html" class="btn-primary btn-large">View Live Strategy →</a>
+    </div>
+    <div class="footer-disclaimer">
+      <p>
+        This is not financial advice. For educational and informational
+        purposes only. Past performance is not indicative of future results.
+      </p>
+      <p class="footer-copyright">© 2026 VIX Strategy. Built with no backend. Powered by VIX.</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

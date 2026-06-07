@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Strategy Dashboard — VIX Strategy</title>
+  <meta name="description" content="Real-time VIX-driven ETF allocation dashboard. See the current portfolio tier and allocation breakdown.">
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="VIX Strategy — Live Dashboard">
+  <meta property="og:description" content="Real-time VIX-driven ETF allocation. Updated every 60 seconds.">
+  <meta property="og:type"        content="website">
+
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<!-- ============================================================
+     Navigation
+     ============================================================ -->
+<header class="site-header">
+  <nav class="nav-container" aria-label="Main navigation">
+    <a href="index.html" class="nav-brand">
+      <img src="assets/img/logo.svg" alt="VIX Strategy" class="nav-logo">
+      <span class="nav-title">VIX Strategy</span>
+    </a>
+    <a href="index.html" class="btn-secondary">← About</a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ============================================================
+       VIX Feed Header
+       ============================================================ -->
+  <section id="vix-feed" class="vix-feed-section" aria-label="Live VIX feed">
+    <div class="container">
+      <div class="vix-feed-inner">
+
+        <div class="vix-primary">
+          <div
+            id="vix-value"
+            class="vix-number"
+            aria-live="polite"
+            aria-label="Current VIX value"
+          >--</div>
+          <div class="vix-meta">
+            <span class="vix-index-label">CBOE VIX</span>
+            <span
+              id="vix-status"
+              class="badge badge-cached"
+              aria-label="Data status"
+            >LOADING</span>
+            <span
+              id="vix-timestamp"
+              class="vix-timestamp"
+              aria-label="Last updated time"
+            >Fetching data…</span>
+          </div>
+        </div>
+
+        <div class="vix-actions">
+          <button
+            id="refresh-btn"
+            class="btn-secondary"
+            aria-label="Force refresh VIX data"
+          >↻ Refresh</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Active Tier Banner
+       ============================================================ -->
+  <section id="active-tier" class="tier-banner-section" aria-label="Active allocation tier">
+    <div class="container">
+      <div
+        id="tier-banner"
+        class="tier-banner"
+        aria-live="polite"
+        role="status"
+      >Waiting for VIX data…</div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Chart + Legend
+       ============================================================ -->
+  <section id="chart-section" class="chart-section dashboard-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" style="margin-bottom:0;">Current Allocation</h2>
+      </div>
+
+      <div class="chart-grid">
+        <!-- Doughnut chart -->
+        <div class="chart-wrapper" aria-label="Portfolio allocation donut chart">
+          <canvas id="allocationChart" aria-label="Donut chart showing current ETF allocation percentages"></canvas>
+        </div>
+
+        <!-- Legend -->
+        <div id="chart-legend" class="chart-legend" aria-label="Chart legend" aria-live="polite">
+          <!-- Populated by JS -->
+          <div class="legend-item">
+            <span class="legend-swatch" style="background-color: var(--color-bil);"></span>
+            <span class="legend-symbol">BIL</span>
+            <span class="legend-pct">--</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch" style="background-color: var(--color-spy);"></span>
+            <span class="legend-symbol">SPY</span>
+            <span class="legend-pct">--</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch" style="background-color: var(--color-qqq);"></span>
+            <span class="legend-symbol">QQQ</span>
+            <span class="legend-pct">--</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-swatch" style="background-color: var(--color-tqqq);"></span>
+            <span class="legend-symbol">TQQQ</span>
+            <span class="legend-pct">--</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Allocation Table
+       ============================================================ -->
+  <section id="allocation-table" class="dashboard-section">
+    <div class="container">
+      <h2 class="section-title">Allocation Breakdown</h2>
+
+      <div class="table-wrapper">
+        <table class="table-styled" aria-label="Current allocation breakdown by ETF">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Allocation</th>
+              <th>ETF Name</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody id="allocation-tbody" aria-live="polite">
+            <!-- Populated by JS -->
+            <tr>
+              <td colspan="4" class="text-secondary" style="text-align:center;padding:2rem;">
+                Loading allocation data…
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Full Tier Reference Table
+       ============================================================ -->
+  <section id="tier-reference" class="dashboard-section section-alt">
+    <div class="container">
+      <h2 class="section-title">VIX Tier Reference</h2>
+      <p class="section-lead" style="margin-bottom: var(--sp-lg);">
+        All five tiers and their normalized allocations.
+        The active tier is highlighted based on the current live VIX reading.
+      </p>
+
+      <div class="table-wrapper">
+        <table class="table-styled" aria-label="Full VIX tier reference table">
+          <thead>
+            <tr>
+              <th>VIX Range / Fear Level</th>
+              <th>BIL</th>
+              <th>SPY</th>
+              <th>QQQ</th>
+              <th>TQQQ</th>
+            </tr>
+          </thead>
+          <tbody id="tier-ref-tbody" aria-live="polite">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Strategy Summary Accordion
+       ============================================================ -->
+  <section id="strategy-summary" class="dashboard-section">
+    <div class="container">
+      <h2 class="section-title">Strategy Summary</h2>
+
+      <details class="accordion-details">
+        <summary class="accordion-summary">Core Philosophy &amp; Mechanics</summary>
+        <div class="accordion-content">
+          <h4>Core Thesis</h4>
+          <p>
+            The VIX is a mean-reverting fear gauge. When markets price in
+            maximum fear, they historically precede the strongest recoveries.
+            This strategy mechanically increases leverage exposure when fear
+            is highest and reduces it during complacency.
+          </p>
+
+          <h4>The Four ETFs</h4>
+          <p>
+            <strong style="color: var(--color-bil);">BIL</strong> — SPDR Bloomberg 1–3 Month T-Bill ETF. Near-cash
+            stability. Preserves capital in calm markets; reduced as crisis opportunity grows.
+          </p>
+          <p>
+            <strong style="color: var(--color-spy);">SPY</strong> — SPDR S&amp;P 500 ETF. Broad market exposure.
+            The steady core position across all tiers.
+          </p>
+          <p>
+            <strong style="color: var(--color-qqq);">QQQ</strong> — Invesco Nasdaq-100 ETF. Growth and tech
+            concentration. Increases meaningfully as VIX rises.
+          </p>
+          <p>
+            <strong style="color: var(--color-tqqq);">TQQQ</strong> — ProShares UltraPro QQQ 3× Leveraged ETF.
+            Maximum recovery capture at peak fear. Highest risk, highest
+            reward potential. Never exceeds 25% of the portfolio.
+          </p>
+
+          <h4>Rebalancing Rules</h4>
+          <p>
+            Rebalance monthly on the first trading day of each month.
+            Additionally, rebalance immediately when the VIX crosses
+            into a different tier — either up or down.
+          </p>
+
+          <h4>Time Horizon</h4>
+          <p>
+            Minimum 10 years. TQQQ's volatility decay requires extended
+            compounding to overcome. This strategy is inappropriate for
+            any capital needed within 5 years.
+          </p>
+
+          <h4>Risk Acknowledgment</h4>
+          <p>
+            This is not financial advice. For educational and informational
+            purposes only. Past performance is not indicative of future results.
+            TQQQ can lose 70–95% of its value in severe bear markets.
+            Never invest more than you can afford to lose completely.
+          </p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     Footer
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-cta">
+      <p>Learn why this strategy is built the way it is.</p>
+      <a href="index.html" class="btn-primary btn-large">← Read the Full Pitch</a>
+    </div>
+    <div class="footer-disclaimer">
+      <p>
+        This is not financial advice. For educational and informational
+        purposes only. Past performance is not indicative of future results.
+      </p>
+      <p class="footer-copyright">© 2026 VIX Strategy. Built with no backend. Powered by VIX.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Chart.js UMD — loads synchronously, sets window.Chart before module runs -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script type="module">
+  import { fetchVIX }                               from './assets/js/vix.js';
+  import { getTier, getAllocation, getTierLabel, TICKERS, ALL_TIERS } from './assets/js/strategy.js';
+  import { initChart, updateChart }                 from './assets/js/chart.js';
+
+  let chartInstance = null;
+
+  function formatTimestamp(date) {
+    if (!date) return 'Unknown';
+    return date.toLocaleString('en-US', {
+      month:  'short', day:    'numeric',
+      hour:   '2-digit', minute: '2-digit', second: '2-digit',
+    });
+  }
+
+  function setStatus(state) {
+    const el = document.getElementById('vix-status');
+    if (!el) return;
+    const map = {
+      live:    { text: 'LIVE',    cls: 'badge-live'   },
+      cached:  { text: 'CACHED', cls: 'badge-cached' },
+      error:   { text: 'ERROR',  cls: 'badge-error'  },
+      loading: { text: 'LOADING', cls: 'badge-cached' },
+    };
+    const s = map[state] ?? map.error;
+    el.textContent = s.text;
+    el.className   = `badge ${s.cls}`;
+  }
+
+  function updateVIXDisplay(data) {
+    const valueEl     = document.getElementById('vix-value');
+    const timestampEl = document.getElementById('vix-timestamp');
+
+    if (data.error) {
+      if (valueEl)     valueEl.textContent     = '--';
+      if (timestampEl) timestampEl.textContent = 'Unable to fetch — check connection';
+      setStatus('error');
+      return;
+    }
+
+    if (valueEl) {
+      valueEl.textContent = data.value.toFixed(2);
+      valueEl.classList.remove('vix-updated');
+      void valueEl.offsetWidth; // reflow to restart animation
+      valueEl.classList.add('vix-updated');
+    }
+    if (timestampEl) {
+      timestampEl.textContent = `Last updated: ${formatTimestamp(data.timestamp)}`;
+    }
+    setStatus(data.fromCache ? 'cached' : 'live');
+  }
+
+  function updateTierBanner(tier, vixValue) {
+    const el = document.getElementById('tier-banner');
+    if (!el) return;
+    el.textContent = `VIX ${vixValue.toFixed(2)} → ${getTierLabel(tier)}`;
+    el.dataset.tier = tier;
+  }
+
+  function updateLegend(allocation) {
+    const el = document.getElementById('chart-legend');
+    if (!el) return;
+    el.innerHTML = Object.entries(allocation).map(([symbol, pct]) => {
+      const ticker = TICKERS[symbol];
+      return `
+        <div class="legend-item">
+          <span class="legend-swatch" style="background-color:${ticker.color}"></span>
+          <span class="legend-symbol" style="color:${ticker.color}">${symbol}</span>
+          <span class="legend-pct">${pct.toFixed(2)}%</span>
+        </div>`;
+    }).join('');
+  }
+
+  function updateAllocationTable(allocation) {
+    const tbody = document.getElementById('allocation-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = Object.entries(allocation).map(([symbol, pct]) => {
+      const ticker = TICKERS[symbol];
+      return `
+        <tr>
+          <td>
+            <span class="ticker-badge" style="color:${ticker.color};border-color:${ticker.color}">
+              ${symbol}
+            </span>
+          </td>
+          <td class="data-value">${pct.toFixed(2)}%</td>
+          <td>${ticker.name}</td>
+          <td class="text-secondary">${ticker.description}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderTierReference(activeTier) {
+    const tbody = document.getElementById('tier-ref-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = ALL_TIERS.map(({ key, label, normalized }) => {
+      const isActive = key === activeTier;
+      return `
+        <tr class="${isActive ? 'tier-active-row' : ''}">
+          <td class="tier-label">${label}</td>
+          <td class="data-value">${normalized.BIL.toFixed(2)}%</td>
+          <td class="data-value">${normalized.SPY.toFixed(2)}%</td>
+          <td class="data-value">${normalized.QQQ.toFixed(2)}%</td>
+          <td class="data-value">${normalized.TQQQ.toFixed(2)}%</td>
+        </tr>`;
+    }).join('');
+  }
+
+  async function refresh() {
+    const data = await fetchVIX();
+    updateVIXDisplay(data);
+
+    if (data.value !== null) {
+      const tier       = getTier(data.value);
+      const allocation = getAllocation(tier);
+      updateTierBanner(tier, data.value);
+      updateLegend(allocation);
+      updateAllocationTable(allocation);
+      renderTierReference(tier);
+
+      if (!chartInstance) {
+        chartInstance = initChart('allocationChart');
+      }
+      updateChart(chartInstance, allocation, data.value);
+    }
+  }
+
+  // Boot
+  document.addEventListener('DOMContentLoaded', async () => {
+    renderTierReference(null);
+    await refresh();
+
+    document.getElementById('refresh-btn')?.addEventListener('click', async () => {
+      sessionStorage.removeItem('vix_cache');
+      await refresh();
+    });
+
+    setInterval(refresh, 60_000);
+  });
+</script>
+
+</body>
+</html>

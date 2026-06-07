@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 44" width="160" height="44" role="img" aria-label="VIX Strategy logo">
+  <text
+    x="6"
+    y="36"
+    font-family="'Courier New', Courier, monospace"
+    font-size="34"
+    font-weight="700"
+    fill="#00ff88"
+    letter-spacing="2"
+  >VIX</text>
+  <polyline
+    points="102,38 108,38 112,22 116,30 120,16 124,10 128,26 132,38 140,38"
+    fill="none"
+    stroke="#00ff88"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.85"
+  />
+</svg>
