@@ -87,4 +87,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.6] – 2026-06-06
+
+### Changed
+- `assets/js/vix.js` – Cache TTL increased from 60 seconds to 30 minutes (`REFRESH_TTL = 30 * 60 * 1000`). A live fetch is now attempted on every page load only when the cached value is older than 30 minutes; otherwise the stored value is returned immediately. Both `index.html` and `strategy.html` follow this same TTL.
+- `README.MD` / `PRD.MD` – Updated refresh interval documentation to reflect 30-minute TTL.
+
+---
+
 *This file is updated after every change. Do not skip versions.*

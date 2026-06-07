@@ -9,7 +9,7 @@ const URLS = [
 // sessionStorage was replaced because it died on tab close and couldn't
 // be shared between index.html and strategy.html.
 const CACHE_KEY = 'vix_last_known';
-const REFRESH_TTL = 60 * 1000; // re-fetch after 60 seconds
+const REFRESH_TTL = 30 * 60 * 1000; // re-fetch after 30 minutes
 
 function parseResponse(data) {
   const meta = data?.chart?.result?.[0]?.meta;

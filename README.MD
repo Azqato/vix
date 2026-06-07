@@ -86,8 +86,8 @@ Fallback: https://api.allorigins.win/raw?url=https://query2.finance.yahoo.com/v8
 The fetched value is saved to `localStorage` under the key `vix_last_known` with no expiry — it persists across tabs, pages, and browser sessions. Both `index.html` and `strategy.html` read this cache synchronously on load so they always show the last real value instantly, with no blank or `--` state while waiting for the network.
 
 **Refresh logic:**
-- Cache younger than 60 seconds → return immediately, no fetch
-- Cache older than 60 seconds → attempt live fetch; if it succeeds, update cache and display; if it fails, return the stale value with a `STALE` badge instead of an error
+- Cache younger than 30 minutes → return immediately, no fetch
+- Cache older than 30 minutes → attempt live fetch on every page load; if it succeeds, update cache and display; if it fails, return the stale value with a `STALE` badge instead of an error
 
 **Status badges:** `LIVE` (green) — fresh fetch · `CACHED` (amber) — within TTL · `STALE` (red) — fetch failed, showing last known value · `ERROR` (red) — fetch failed and no prior value exists
 

@@ -170,7 +170,7 @@ https://api.allorigins.win/raw?url=https://query2.finance.yahoo.com/v8/finance/c
 - `chart.result[0].meta.regularMarketPrice` → Current VIX value
 - `chart.result[0].meta.regularMarketTime` → Last updated timestamp
 
-**Caching:** Store last fetched value and timestamp in `localStorage` under key `vix_last_known`. Unlike `sessionStorage`, this persists across tabs, pages, and browser sessions, allowing both `index.html` and `strategy.html` to read the same last-known value synchronously on load. Refresh interval: 60 seconds.
+**Caching:** Store last fetched value and timestamp in `localStorage` under key `vix_last_known`. Unlike `sessionStorage`, this persists across tabs, pages, and browser sessions, allowing both `index.html` and `strategy.html` to read the same last-known value synchronously on load. Refresh interval: 30 minutes — a live fetch is attempted on every page load if the cached value is older than 30 minutes.
 
 **Error Handling:**
 - If fetch fails and a prior cached value exists, display it with a `STALE` badge
