@@ -102,4 +102,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.8] – 2026-06-06
+
+### Added
+- `assets/img/favicon.svg` – 📈 emoji favicon (SVG format) for consistent browser tab and bookmark display
+- `index.html` / `strategy.html` – `<link rel="icon">` tag added to both pages pointing to the new favicon
+
+---
+
 *This file is updated after every change. Do not skip versions.*
