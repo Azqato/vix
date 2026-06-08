@@ -2,7 +2,7 @@
 
 > *Fear is a signal. Use it.*
 
-**Current version: v1.0.8** · **[Live Site](https://azqato.github.io/VIX/)**
+**Current version: v1.0.9** · **[Live Site](https://azqato.github.io/VIX/)**
 
 A rules-based, browser-only portfolio strategy dashboard that uses the CBOE VIX (Volatility Index) to dynamically compute ETF allocations in real time. Built for GitHub Pages with zero backend.
 

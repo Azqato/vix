@@ -110,4 +110,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.9] – 2026-06-07
+
+### Added
+- `index.html` / `strategy.html` – **Support** link added to the navigation bar on both pages, opening `https://azqato.github.io/support.html` in a new tab
+- `index.html` / `strategy.html` – **"Built by Azqato"** footer credit added to both pages; "Azqato" links to `https://azqato.github.io/`
+
+---
+
 *This file is updated after every change. Do not skip versions.*
