@@ -1,0 +1,90 @@
+# Security Document
+
+**Product:** VIX Strategy
+**Version:** 1.0.11
+**Last Updated:** 2026-06-08
+
+---
+
+## Authentication Model
+
+None. VIX Strategy has no user authentication, no login flow, no sessions, and no user accounts. All pages are publicly accessible to anyone with a browser. There is no admin interface and no privileged access.
+
+---
+
+## Authorization Model
+
+None. There are no user roles and no access-controlled resources. The application is entirely read-only from the user's perspective — it fetches public market data and renders it.
+
+---
+
+## Data Storage
+
+| Data | Storage location | Contents | Accessible by | Protection mechanism |
+|------|-----------------|----------|---------------|---------------------|
+| VIX cache | `localStorage` (browser-side) | Last VIX value (float), ISO timestamp, fetchedAt Unix ms | JavaScript running on the same origin only | Browser same-origin policy |
+
+**No user data of any kind is collected, stored server-side, or transmitted.** localStorage holds only the last-known VIX number and the timestamp of when it was fetched. It contains zero personally identifiable information (PII).
+
+---
+
+## Environment Variables
+
+None. This application has no backend, no build step, and no secrets of any kind. There is no `.env` file, no API key, no database credential, and no configuration value that must be protected.
+
+**Nothing should ever be committed to this repository that resembles a secret.** The Yahoo Finance endpoint and allorigins.win proxy URL are public, unauthenticated, and intentionally visible in source code.
+
+---
+
+## Third-Party Trust
+
+Every outbound request made by the application:
+
+| Service | URL | Data transmitted | Purpose |
+|---------|-----|-----------------|---------|
+| allorigins.win | `https://api.allorigins.win/raw?url=...` | Target URL + browser IP (implicit) | Relay VIX data request around CORS block |
+| Yahoo Finance | `https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX` | Browser IP and user-agent (via relay) | Source of VIX market data |
+| jsDelivr CDN | `https://cdn.jsdelivr.net/npm/chart.js@4.4.0/...` | Browser IP and user-agent | Serve Chart.js library |
+
+**No user's personal data, financial data, portfolio information, or identifying information is transmitted to any party.** The only data leaving the browser is the standard HTTP metadata inherent in any web request (IP address, user-agent).
+
+---
+
+## Known Attack Surface
+
+### CORS Proxy Response Injection
+
+**Risk:** A compromised allorigins.win could return malicious JSON instead of valid VIX data.
+
+**Mitigation:** The `parseResponse()` function in `vix.js` accesses only two specific fields: `chart.result[0].meta.regularMarketPrice` (coerced to a number) and `chart.result[0].meta.regularMarketTime` (coerced to a Date). No content from the proxy response is passed to `eval()`, `innerHTML`, or `Function()`. A malformed response throws an error and the cached value is used instead.
+
+### DOM Injection via Rendered Data
+
+**Risk:** If VIX values or ETF names were inserted into the DOM unsanitized, they could carry XSS payloads.
+
+**Mitigation:**
+- VIX values from the API are numbers — inserted via `.textContent`, which never executes HTML.
+- ETF names and descriptions are hardcoded constants in `strategy.js` (`TICKERS` object), not derived from any API response.
+- Template literals used for table row and legend HTML (`innerHTML`) render only from the `TICKERS` constant and numeric allocation values — never from user input or API text fields.
+
+### CDN Compromise (Chart.js)
+
+**Risk:** If jsDelivr is compromised, a modified Chart.js bundle could execute arbitrary JavaScript in every visitor's browser.
+
+**Mitigation (current):** The CDN version is pinned to `4.4.0`. This prevents silent upgrades but does not prevent a targeted replacement of that specific version's files.
+
+**Known debt:** No Subresource Integrity (SRI) hash is present on the `<script src>` tag. Adding `integrity="sha384-..."` would cause the browser to reject any CDN response that doesn't match the expected hash, providing strong protection against CDN compromise. This should be added.
+
+### No User Input
+
+There is no user input anywhere in this application. There are no forms, no search fields, no query parameters that affect rendering. This eliminates the majority of the traditional web attack surface (XSS via input, SQL injection, CSRF, etc.).
+
+---
+
+## Dependency Policy
+
+- **Runtime dependencies:** One — Chart.js 4.4.0, loaded via CDN UMD `<script>` tag.
+- **Development dependencies:** None. No `package.json`, no lock file, no npm.
+- **Version pinning:** Chart.js is pinned directly in the `<script src>` URL. Updates require a deliberate code change.
+- **Vulnerability scanning:** Not automated. No Dependabot, no Snyk, no GitHub security alerts (no `package.json` to scan).
+- **Update policy:** Chart.js updates are applied manually when a security vulnerability is publicly disclosed for the pinned version. Check https://github.com/chartjs/Chart.js/security/advisories periodically.
