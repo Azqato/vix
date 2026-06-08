@@ -118,4 +118,14 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.10] – 2026-06-07
+
+### Changed
+- `assets/css/styles.css` – Added `.nav-links`, `.nav-link`, and `.nav-link.nav-active` CSS classes. All three navigation items now use a unified pill-style link with a subtle green highlight for the active page, replacing the previous mixed `btn-primary` / `btn-secondary` button approach.
+- `index.html` – Navigation rebuilt: brand logo stays on the left; three links (`About` · `Dashboard` · `Support`) sit on the right in left-to-right order. `About` carries `nav-active` + `aria-current="page"` on this page.
+- `strategy.html` – Same three-link navigation; `Dashboard` carries `nav-active` + `aria-current="page"` on this page.
+- Mobile breakpoint (≤768px) — nav links scale down to `0.72rem` / `0.35rem 0.55rem` padding to stay legible on small screens.
+
+---
+
 *This file is updated after every change. Do not skip versions.*
