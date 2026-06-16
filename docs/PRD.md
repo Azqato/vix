@@ -1,9 +1,9 @@
 # Product Requirements Document
 
 **Product:** VIX Strategy
-**Version:** 1.0.11
+**Version:** 1.0.12
 **Status:** Live — MVP shipped
-**Last Updated:** 2026-06-08
+**Last Updated:** 2026-06-15
 
 ---
 
@@ -53,7 +53,9 @@ Arrives via GitHub, wants to understand how the strategy works technically, may 
 - As a researcher, I want to see all five VIX tiers and their allocations in one table, so that I can understand the full strategy at a glance.
 - As a long-term investor, I want a clear risk disclosure on every page, so that I understand the dangers of leveraged ETFs before using this strategy.
 - As a developer, I want clean, modular JavaScript with no build system, so that I can read and fork the codebase easily.
-- As any visitor, I want the last-known VIX value to display instantly on load even before the network request completes, so that I never see a blank or loading state.
+- As any visitor, I want the last-known VIX value to display instantly on load even before the network request completes, so that I never see a blank state.
+- As any visitor, when no cached value is available and the app is fetching live data, I want to see an animated loading counter (`Loading 1`, `Loading 2`, …) so that I know the app is working and not frozen.
+- As any visitor, if the VIX API is completely unreachable and there is no cached value, I want to see a clear error message (`Error Please Refresh`) instead of a silent blank, so that I know to retry.
 - As any visitor, I want the site to work even if the VIX data source is temporarily unreachable, so that I still see the most recent allocation.
 
 ---
@@ -67,6 +69,7 @@ Arrives via GitHub, wants to understand how the strategy works technically, may 
 - **Live VIX data:** Fetched from Yahoo Finance JSON API via allorigins.win CORS proxy. No backend required.
 - **localStorage caching:** VIX value persists across tabs and browser sessions. 30-minute TTL. Instant synchronous read on page load.
 - **Status badges:** LIVE / CACHED / STALE / ERROR states with distinct colors.
+- **Loading counter:** When a live network fetch is required (no cache or stale cache), the VIX number area shows `Loading 1`, `Loading 2`, etc., incrementing every second until the response arrives. On total API failure with no cache, changes to `Error Please Refresh` (red).
 - **Auto-refresh:** strategy.html refreshes VIX every 60 seconds automatically.
 - **Manual refresh:** Button clears cache and forces a live fetch.
 - **Sticky navigation:** About / Dashboard / Support links with active-page green highlight and `aria-current="page"`.

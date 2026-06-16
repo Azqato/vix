@@ -887,6 +887,28 @@ a:hover { opacity: 0.8; }
 .text-muted        { color: var(--text-muted) !important; }
 
 /* ================================================
+   Loading / error text states
+   ================================================ */
+.vix-number.vix-status-text {
+  font-size: clamp(1.1rem, 3vw, 1.75rem);
+  text-shadow: none;
+  color: var(--accent-amber);
+}
+.vix-number.vix-status-text.vix-status-error {
+  color: var(--accent-red);
+}
+
+.gauge-value.gauge-status-text {
+  font-size: 1rem;
+  line-height: 1.4;
+  text-shadow: none;
+  animation: none;
+}
+.gauge-value.gauge-status-text.gauge-status-error {
+  color: var(--accent-red);
+}
+
+/* ================================================
    Responsive
    ================================================ */
 @media (max-width: 900px) {

@@ -6,6 +6,16 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.12] – 2026-06-15
+
+### Added
+- `strategy.html` — Live loading counter in the VIX number display. When a network fetch is required (no cache or stale cache), the big VIX value area shows `Loading 1`, `Loading 2`, `Loading 3`, etc., incrementing every second, so the user knows a live API call is in progress. Counter stops the instant the fetch resolves.
+- `index.html` — Same loading counter in the hero gauge value area. Only activates on first load when there is no cached value at all; if stale cached data already exists it is shown immediately while the fresh fetch runs silently.
+- `strategy.html` / `index.html` — API error state: if all proxy URLs fail and no cache is available, the loading counter text changes to `Error Please Refresh` (styled red) instead of the previous `--` placeholder.
+- `assets/css/styles.css` — Four new modifier classes: `.vix-status-text` and `.vix-status-error` (for the strategy page big number) and `.gauge-status-text` and `.gauge-status-error` (for the index hero gauge). These shrink the font size and apply amber/red coloring so loading and error text fits the display area cleanly.
+
+---
+
 ## [1.0.11] – 2026-06-08
 
 ### Added
