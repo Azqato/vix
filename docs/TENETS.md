@@ -1,7 +1,7 @@
 # Product Tenets
 
 **Product:** VIX Strategy
-**Version:** 1.1.1
+**Version:** 1.2.0
 
 Tenets are ordered by priority. When two tenets conflict, the higher one wins.
 

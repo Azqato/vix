@@ -6,6 +6,22 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.2.0] – 2026-07-09
+
+### Added
+- `custom.html` — New "Custom" strategy builder page. Lets a user substitute their own ticker into each of four fixed risk categories (Risk Off, Diversify, Risk On, Full Risk), while keeping the exact same VIX-tier percentage weights as the core strategy. Includes its own live VIX feed, tier banner, doughnut chart, and allocation table, mirroring `strategy.html`'s dashboard.
+- `assets/js/custom.js` — New library: category metadata (slot mapping, labels, colors, descriptions), `localStorage['vix_custom_tickers']` persistence, and `sanitizeTicker()` — uppercases and restricts free-text input to `[A-Z0-9.-]`, max 10 characters. This is basic input hygiene, **not** verification that the ticker exists; the UI says so explicitly. Live verification is deferred to v1.2.1.
+- **"Custom" nav link** added to `index.html`, `strategy.html`, and `custom.html`, positioned between Dashboard and Azqato Invests.
+- `assets/css/styles.css` — New `.customize-*` classes for the ticker input form (grid layout, styled text inputs, save/reset actions, status message).
+
+### Changed
+- `assets/js/chart.js` — `initChart()` and `updateChart()` now accept an optional `labels` parameter, defaulting to `['BIL', 'SPY', 'QQQ', 'TQQQ']` when omitted. `strategy.html`'s existing usage is unaffected; `custom.html` passes the user's custom ticker symbols instead.
+
+### Security
+- This is the first user-input surface in the app (previous versions had none). All user-entered ticker text is rendered via `.textContent` or `.value`, never `innerHTML`, in addition to the `sanitizeTicker()` character-allowlist — defense in depth against DOM injection even though the current charset alone already blocks it. See `docs/SECURITY.md`.
+
+---
+
 ## [1.1.1] – 2026-07-09
 
 ### Fixed

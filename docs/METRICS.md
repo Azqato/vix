@@ -1,8 +1,8 @@
 # Metrics
 
 **Product:** VIX Strategy
-**Version:** 1.0.11
-**Last Updated:** 2026-06-08
+**Version:** 1.2.0
+**Last Updated:** 2026-07-09
 
 ---
 
@@ -18,12 +18,12 @@ Rationale: strategy.html is the core product — the live allocation dashboard. 
 
 | Metric | Definition | Target | Timeframe |
 |--------|-----------|--------|-----------|
-| Monthly unique visitors | Total unique sessions across both pages | 500/month | 3 months post-launch |
+| Monthly unique visitors | Total unique sessions across all pages (index.html, strategy.html, custom.html) | 500/month | 3 months post-launch |
 | GitHub referral traffic | Sessions originating from GitHub (stars, README, links) | ≥ 30% of total | Ongoing |
 | Organic search sessions | Sessions arriving via search engine | 100/month | 6 months post-launch |
 | GitHub stars | Total stars on the repository | 25 | 6 months post-launch |
 
-**Measurement method:** GitHub Insights provides referral and traffic data. Page view analytics require adding a privacy-respecting analytics script (e.g., Plausible, GoatCounter) to both pages. Until then, GitHub star and fork count serve as the primary acquisition proxy.
+**Measurement method:** GitHub Insights provides referral and traffic data. Page view analytics require adding a privacy-respecting analytics script (e.g., Plausible, GoatCounter) to all pages. Until then, GitHub star and fork count serve as the primary acquisition proxy.
 
 ---
 

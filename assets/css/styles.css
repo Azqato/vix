@@ -826,6 +826,73 @@ a:hover { opacity: 0.8; }
 .section-header h2::after { display: none; }
 
 /* ================================================
+   Custom Page — Customize Form
+   ================================================ */
+.customize-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-lg);
+  margin-bottom: var(--sp-lg);
+}
+
+.customize-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+
+.customize-field label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.customize-field-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  min-height: 2.2em;
+}
+
+.customize-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 0.65rem 0.875rem;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  transition: var(--transition);
+}
+.customize-input:focus {
+  outline: none;
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.12);
+}
+
+.customize-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  flex-wrap: wrap;
+}
+
+.customize-status {
+  margin: var(--sp-md) 0 0;
+  font-size: 0.85rem;
+  color: var(--accent-green);
+}
+.customize-status-error {
+  color: var(--accent-red);
+}
+.customize-status:empty {
+  display: none;
+}
+
+/* ================================================
    Strategy Page — Accordion
    ================================================ */
 .accordion-details {

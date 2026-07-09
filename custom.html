@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Strategy — VIX Strategy</title>
+  <meta name="description" content="Build your own VIX-driven allocation strategy. Pick your own ticker for each risk category, keeping the same VIX-tier weighting as the core strategy.">
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="VIX Strategy — Custom Strategy Builder">
+  <meta property="og:description" content="Substitute your own ETFs into the VIX-tier allocation model.">
+  <meta property="og:type"        content="website">
+
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<!-- ============================================================
+     Navigation
+     ============================================================ -->
+<header class="site-header">
+  <nav class="nav-container" aria-label="Main navigation">
+    <a href="index.html" class="nav-brand">
+      <img src="assets/img/logo.svg" alt="VIX Strategy" class="nav-logo">
+      <span class="nav-title">VIX Strategy</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">About</a>
+      <a href="strategy.html" class="nav-link">Dashboard</a>
+      <a href="custom.html" class="nav-link nav-active" aria-current="page">Custom</a>
+      <a href="https://azqato.com/invests" class="nav-link" target="_blank" rel="noopener noreferrer">Azqato Invests</a>
+      <a href="https://azqato.github.io/support.html" class="nav-link" target="_blank" rel="noopener noreferrer">Support</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ============================================================
+       Intro
+       ============================================================ -->
+  <section id="custom-intro" class="section">
+    <div class="container">
+      <h2 class="section-title">Build Your Own VIX Strategy</h2>
+      <p class="section-lead">
+        Keep the same five VIX-tier weightings as the core strategy, but
+        substitute your own ticker into each risk category. Your choices
+        are saved in this browser only.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Customize Form
+       ============================================================ -->
+  <section id="customize" class="dashboard-section section-alt">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" style="margin-bottom:0;">Your Categories</h2>
+      </div>
+
+      <p class="table-note" style="margin-top:0;margin-bottom:var(--sp-lg);">
+        Free-text entry — tickers are not yet verified against a live quote.
+        Double-check your symbol before saving.
+      </p>
+
+      <form id="customize-form" class="customize-grid" novalidate>
+        <!-- Populated by JS: one field per category -->
+      </form>
+
+      <div class="customize-actions">
+        <button type="submit" form="customize-form" class="btn-primary">Save Strategy</button>
+        <button type="button" id="reset-btn" class="btn-secondary">Reset to Defaults</button>
+      </div>
+      <p id="customize-status" class="customize-status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       VIX Feed Header
+       ============================================================ -->
+  <section id="vix-feed" class="vix-feed-section" aria-label="Live VIX feed">
+    <div class="container">
+      <div class="vix-feed-inner">
+
+        <div class="vix-primary">
+          <div
+            id="vix-value"
+            class="vix-number"
+            aria-live="polite"
+            aria-label="Current VIX value"
+          >--</div>
+          <div class="vix-meta">
+            <span class="vix-index-label">CBOE VIX</span>
+            <span
+              id="vix-status"
+              class="badge badge-cached"
+              aria-label="Data status"
+            >LOADING</span>
+            <span
+              id="vix-timestamp"
+              class="vix-timestamp"
+              aria-label="Last updated time"
+            >Fetching data…</span>
+          </div>
+        </div>
+
+        <div class="vix-actions">
+          <button
+            id="refresh-btn"
+            class="btn-secondary"
+            aria-label="Force refresh VIX data"
+          >↻ Refresh</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Active Tier Banner
+       ============================================================ -->
+  <section id="active-tier" class="tier-banner-section" aria-label="Active allocation tier">
+    <div class="container">
+      <div
+        id="tier-banner"
+        class="tier-banner"
+        aria-live="polite"
+        role="status"
+      >Waiting for VIX data…</div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Chart + Legend
+       ============================================================ -->
+  <section id="chart-section" class="chart-section dashboard-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" style="margin-bottom:0;">Your Custom Allocation</h2>
+      </div>
+
+      <div class="chart-grid">
+        <!-- Doughnut chart -->
+        <div class="chart-wrapper" aria-label="Portfolio allocation donut chart">
+          <canvas id="allocationChart" aria-label="Donut chart showing current custom allocation percentages"></canvas>
+        </div>
+
+        <!-- Legend -->
+        <div id="chart-legend" class="chart-legend" aria-label="Chart legend" aria-live="polite">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Allocation Table
+       ============================================================ -->
+  <section id="allocation-table" class="dashboard-section">
+    <div class="container">
+      <h2 class="section-title">Allocation Breakdown</h2>
+
+      <div class="table-wrapper">
+        <table class="table-styled" aria-label="Current custom allocation breakdown by category">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Ticker</th>
+              <th>Allocation</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody id="allocation-tbody" aria-live="polite">
+            <tr>
+              <td colspan="4" class="text-secondary" style="text-align:center;padding:2rem;">
+                Loading allocation data…
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="table-note">
+        Same VIX-tier boundaries and percentage weights as the core strategy —
+        only the ticker per category changes. Rebalance monthly, or whenever
+        the VIX crosses into a new tier.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     Footer
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-cta">
+      <p>Prefer the original allocation?</p>
+      <a href="strategy.html" class="btn-primary btn-large">View Core Strategy →</a>
+    </div>
+    <div class="footer-disclaimer">
+      <p>
+        This is not financial advice. For educational and informational
+        purposes only. Past performance is not indicative of future results.
+        Tickers you enter here are not verified against a live quote.
+      </p>
+      <p class="footer-copyright">© 2026 VIX Strategy. Built with no backend. Powered by VIX.</p>
+      <p class="footer-copyright">Built by <a href="https://azqato.github.io/" target="_blank" rel="noopener noreferrer" style="color:var(--accent-green);text-decoration:none;">Azqato</a></p>
+    </div>
+  </div>
+</footer>
+
+<!-- Chart.js UMD — loads synchronously, sets window.Chart before the scripts below run -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script src="data/vix.js"></script>
+<script src="assets/js/vix.js"></script>
+<script src="assets/js/strategy.js"></script>
+<script src="assets/js/chart.js"></script>
+<script src="assets/js/custom.js"></script>
+<script>
+(function () {
+  // Wrapped in an IIFE: classic scripts share one global scope, and vix.js/
+  // strategy.js/chart.js/custom.js declare top-level functions with these
+  // same names (getTier, getCachedVIX, initChart, etc). Destructuring them
+  // as top-level const here would collide with those global function
+  // declarations and throw a SyntaxError before this script ever runs.
+  const { getCachedVIX, fetchVIX }     = window.VixData;
+  const { getTier, getAllocation }     = window.VixStrategy;
+  const { initChart, updateChart }     = window.VixChart;
+  const { CATEGORIES, getCustomConfig, saveCustomConfig, resetCustomConfig } = window.VixCustom;
+
+  let chartInstance = null;
+  let loadingTimer = null;
+  let config = getCustomConfig();
+
+  function currentLabels() {
+    return CATEGORIES.map((c) => config[c.key]);
+  }
+
+  function buildFormFields() {
+    const form = document.getElementById('customize-form');
+    if (!form) return;
+    form.innerHTML = '';
+    CATEGORIES.forEach((c) => {
+      const field = document.createElement('div');
+      field.className = 'customize-field';
+
+      const label = document.createElement('label');
+      label.setAttribute('for', `ticker-${c.key}`);
+      label.textContent = c.label;
+      label.style.color = c.color;
+
+      const sub = document.createElement('span');
+      sub.className = 'customize-field-desc';
+      sub.textContent = c.description;
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.id = `ticker-${c.key}`;
+      input.name = c.key;
+      input.className = 'customize-input';
+      input.maxLength = 10;
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      input.value = config[c.key];
+
+      field.appendChild(label);
+      field.appendChild(sub);
+      field.appendChild(input);
+      form.appendChild(field);
+    });
+  }
+
+  function updateLegend(allocation) {
+    const el = document.getElementById('chart-legend');
+    if (!el) return;
+    el.innerHTML = '';
+    CATEGORIES.forEach((c) => {
+      const item = document.createElement('div');
+      item.className = 'legend-item';
+
+      const swatch = document.createElement('span');
+      swatch.className = 'legend-swatch';
+      swatch.style.backgroundColor = c.color;
+
+      const symbol = document.createElement('span');
+      symbol.className = 'legend-symbol';
+      symbol.style.color = c.color;
+      symbol.textContent = config[c.key];
+
+      const pct = document.createElement('span');
+      pct.className = 'legend-pct';
+      pct.textContent = `${allocation[c.slot].toFixed(2)}%`;
+
+      item.appendChild(swatch);
+      item.appendChild(symbol);
+      item.appendChild(pct);
+      el.appendChild(item);
+    });
+  }
+
+  function updateAllocationTable(allocation) {
+    const tbody = document.getElementById('allocation-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    CATEGORIES.forEach((c) => {
+      const tr = document.createElement('tr');
+
+      const tdCategory = document.createElement('td');
+      tdCategory.textContent = c.label;
+
+      const tdTicker = document.createElement('td');
+      const badge = document.createElement('span');
+      badge.className = 'ticker-badge';
+      badge.style.color = c.color;
+      badge.style.borderColor = c.color;
+      badge.textContent = config[c.key];
+      tdTicker.appendChild(badge);
+
+      const tdPct = document.createElement('td');
+      tdPct.className = 'data-value';
+      tdPct.textContent = `${allocation[c.slot].toFixed(2)}%`;
+
+      const tdDesc = document.createElement('td');
+      tdDesc.className = 'text-secondary';
+      tdDesc.textContent = c.description;
+
+      tr.appendChild(tdCategory);
+      tr.appendChild(tdTicker);
+      tr.appendChild(tdPct);
+      tr.appendChild(tdDesc);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function startLoadingCounter() {
+    stopLoadingCounter();
+    let count = 0;
+    const el = document.getElementById('vix-value');
+    if (!el) return;
+    count++;
+    el.textContent = `Loading ${count}`;
+    el.classList.add('vix-status-text');
+    el.classList.remove('vix-status-error');
+    loadingTimer = setInterval(() => {
+      count++;
+      el.textContent = `Loading ${count}`;
+    }, 1000);
+  }
+
+  function stopLoadingCounter() {
+    if (loadingTimer) {
+      clearInterval(loadingTimer);
+      loadingTimer = null;
+    }
+  }
+
+  function formatTimestamp(date) {
+    if (!date) return 'Unknown';
+    return date.toLocaleString('en-US', {
+      month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      timeZone: 'America/New_York',
+      timeZoneName: 'short',
+    });
+  }
+
+  function setStatus(state) {
+    const el = document.getElementById('vix-status');
+    if (!el) return;
+    const map = {
+      live:    { text: 'LIVE',    cls: 'badge-live'   },
+      cached:  { text: 'CACHED', cls: 'badge-cached' },
+      stale:   { text: 'STALE',  cls: 'badge-error'  },
+      error:   { text: 'ERROR',  cls: 'badge-error'  },
+      loading: { text: 'LOADING', cls: 'badge-cached' },
+    };
+    const s = map[state] ?? map.error;
+    el.textContent = s.text;
+    el.className   = `badge ${s.cls}`;
+  }
+
+  function updateVIXDisplay(data) {
+    const valueEl     = document.getElementById('vix-value');
+    const timestampEl = document.getElementById('vix-timestamp');
+
+    if (data.error) {
+      if (valueEl) {
+        valueEl.textContent = 'Error Please Refresh';
+        valueEl.classList.add('vix-status-text', 'vix-status-error');
+      }
+      if (timestampEl) timestampEl.textContent = 'Unable to fetch — check connection';
+      setStatus('error');
+      return;
+    }
+
+    if (valueEl) {
+      valueEl.classList.remove('vix-status-text', 'vix-status-error');
+      valueEl.textContent = data.value.toFixed(2);
+      valueEl.classList.remove('vix-updated');
+      void valueEl.offsetWidth;
+      valueEl.classList.add('vix-updated');
+    }
+    if (timestampEl) {
+      timestampEl.textContent = `Last updated: ${formatTimestamp(data.timestamp)}`;
+    }
+    setStatus(data.stale ? 'stale' : data.fromCache ? 'cached' : 'live');
+  }
+
+  function updateTierBanner(tier, vixValue) {
+    const el = document.getElementById('tier-banner');
+    if (!el) return;
+    el.textContent = `VIX ${vixValue.toFixed(2)} → Tier: ${tier.replace('tier', '')}`;
+    el.dataset.tier = tier;
+  }
+
+  function renderAll(vixValue) {
+    const tier       = getTier(vixValue);
+    const allocation = getAllocation(tier);
+    updateTierBanner(tier, vixValue);
+    updateLegend(allocation);
+    updateAllocationTable(allocation);
+
+    if (!chartInstance) {
+      chartInstance = initChart('allocationChart', currentLabels());
+    }
+    updateChart(chartInstance, allocation, vixValue, currentLabels());
+  }
+
+  async function refresh() {
+    const cached    = getCachedVIX();
+    const willFetch = !cached || cached.stale;
+
+    if (willFetch) {
+      startLoadingCounter();
+      setStatus('loading');
+    }
+
+    const data = await fetchVIX();
+    stopLoadingCounter();
+    updateVIXDisplay(data);
+
+    if (data.value !== null) {
+      renderAll(data.value);
+    }
+  }
+
+  function paintCached() {
+    const cached = getCachedVIX();
+    if (!cached) return;
+    updateVIXDisplay(cached);
+    renderAll(cached.value);
+  }
+
+  function showStatus(message, isError) {
+    const el = document.getElementById('customize-status');
+    if (!el) return;
+    el.textContent = message;
+    el.classList.toggle('customize-status-error', !!isError);
+  }
+
+  buildFormFields();
+
+  document.getElementById('customize-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const next = {};
+    CATEGORIES.forEach((c) => {
+      const input = document.getElementById(`ticker-${c.key}`);
+      next[c.key] = input ? input.value : config[c.key];
+    });
+    config = saveCustomConfig(next);
+    buildFormFields();
+    const cached = getCachedVIX();
+    if (cached) renderAll(cached.value);
+    showStatus('Saved. Allocation below now reflects your tickers.', false);
+  });
+
+  document.getElementById('reset-btn')?.addEventListener('click', () => {
+    config = resetCustomConfig();
+    buildFormFields();
+    const cached = getCachedVIX();
+    if (cached) renderAll(cached.value);
+    showStatus('Reset to default tickers (BIL / SPY / QQQ / TQQQ).', false);
+  });
+
+  (async () => {
+    paintCached();
+    await refresh();
+
+    document.getElementById('refresh-btn')?.addEventListener('click', async () => {
+      localStorage.removeItem('vix_last_known');
+      await refresh();
+    });
+
+    setInterval(refresh, 60_000);
+  })();
+})();
+</script>
+
+</body>
+</html>

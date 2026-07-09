@@ -1,15 +1,15 @@
 # Roadmap
 
 **Product:** VIX Strategy
-**Version:** 1.1.1
+**Version:** 1.2.0
 **Last Updated:** 2026-07-09
 
 ---
 
 ## Current Phase
 
-**Phase 2 — Server-Side Data + Custom Strategies (v1.1.x)**
-The MVP (v1.0.x) is complete and deployed. VIX data now refreshes on a schedule via GitHub Actions in addition to the live browser fetch. Next up: a user-configurable "Custom" strategy tab, plus the existing v1.2.0+ feature backlog.
+**Phase 2 — Server-Side Data + Custom Strategies (v1.1.x–v1.2.x)**
+The MVP (v1.0.x) is complete and deployed. VIX data refreshes on a schedule via GitHub Actions in addition to the live browser fetch. The "Custom" strategy builder (v1.2.0) has shipped with free-text ticker entry; live ticker verification against a real quote is deferred to v1.2.1. Next up: verification, then the existing v1.3.0+ feature backlog.
 
 ---
 
@@ -31,7 +31,8 @@ The MVP (v1.0.x) is complete and deployed. VIX data now refreshes on a schedule 
 | Full documentation audit | v1.0.11 | Complete | 2026-06-08 |
 | Server-side VIX data pipeline (GitHub Actions) | v1.1.0 | Complete | 2026-07-09 |
 | Fix inline-script global scope collision (SyntaxError breaking VIX display) | v1.1.1 | Complete | 2026-07-09 |
-| Custom strategy builder ("Custom" tab) | v1.2.0 | Planned | TBD |
+| Custom strategy builder ("Custom" tab), free-text tickers | v1.2.0 | Complete | 2026-07-09 |
+| Live ticker verification against a real quote | v1.2.1 | Planned | TBD |
 | SMH/SOXL strategy toggle | v1.3.0 | Planned | TBD |
 | QQQ vs 200-day MA trend filter | v1.4.0 | Planned | TBD |
 | VIX percentile rank mode | v1.5.0 | Planned | TBD |
@@ -60,14 +61,21 @@ The MVP (v1.0.x) is complete and deployed. VIX data now refreshes on a schedule 
 - Fixed by wrapping each inline script's content in an IIFE (`(function () { ... })();`), giving its `const` declarations their own scope so they safely shadow the globals instead of colliding with them
 - See `docs/PATCHNOTES.md` [1.1.1] for full detail
 
-### v1.2.0 — Custom Strategy Builder ("Custom" tab)
-- New "Custom" page/tab in the navigation, positioned as its own top-level entry alongside About / Dashboard
-- Users are prompted with four fixed risk categories, seeded from the existing strategy: **Risk Off** (default BIL), **Diversify** (default SPY), **Risk On** (default QQQ), **Full Risk** (default TQQQ)
-- For each category, the user picks their own ticker to substitute in place of the default ETF
-- The app recomputes a "custom" VIX-tier allocation table using the same tier boundaries and percentage weights as the core strategy, substituting the user's chosen tickers in place of BIL/SPY/QQQ/TQQQ
-- No live fundamental/price validation of user-entered tickers — likely a free-text or small-list input; exact UX (free text vs. curated dropdown) needs to be decided before implementation
-- Selections persist in `localStorage` only, consistent with the site's no-backend model
-- Reuses existing `getTier()` / tier-boundary logic from `strategy.js`; only the ticker-to-category mapping and allocation table rendering are new
+### v1.2.0 — Custom Strategy Builder ("Custom" tab) — Complete
+- New `custom.html` page, added to the nav on every page as **Custom**, between Dashboard and Azqato Invests
+- Four fixed risk categories, seeded from the core strategy: **Risk Off** (default BIL), **Diversify** (default SPY), **Risk On** (default QQQ), **Full Risk** (default TQQQ) — each with a free-text input for the user's own ticker
+- Input is free-text, not verified against a live quote — sanitized client-side (`assets/js/custom.js`: uppercased, restricted to `[A-Z0-9.-]`, max 10 chars) as basic hygiene only, not existence validation. The UI explicitly labels this ("tickers are not yet verified") so it isn't mistaken for real validation. Live verification is deferred to v1.2.1
+- Recomputes the VIX-tier allocation table using the same tier boundaries and percentage weights as the core strategy (`getAllocation()` in `strategy.js`, unmodified) — only the displayed ticker per category changes, not the math
+- Selections persist in `localStorage['vix_custom_tickers']` only, consistent with the site's no-backend model
+- `chart.js`'s `initChart()`/`updateChart()` extended with an optional `labels` parameter so the doughnut chart can show custom ticker symbols instead of the hardcoded BIL/SPY/QQQ/TQQQ labels, without touching the core strategy.html usage (labels default to the original four when omitted)
+- All user-entered ticker text is rendered via `.textContent`/`.value`, never `innerHTML` — this is the first user-input surface in the app, so DOM-injection safety was treated as a hard requirement, not an afterthought (see `docs/SECURITY.md`)
+
+### v1.2.1 — Live Ticker Verification
+- On blur (or explicit action), verify the entered ticker actually resolves to a quote — reuse the existing Yahoo Finance `v8/finance/chart/<TICKER>` endpoint via the allorigins.win proxy, the same pattern already used for VIX itself
+- Show inline state: `Verifying…` → ✓ valid (surface the resolved company/fund name) or ✗ invalid (`Ticker not found`)
+- Debounce input and cache verified tickers for the session to avoid redundant lookups
+- Degrade gracefully if allorigins.win is unavailable — don't hard-block saving, since the proxy has no SLA
+- Does not attempt to confirm the ticker is actually an ETF (vs. a single stock) or a sensible fit for its category — Yahoo's response doesn't cleanly distinguish instrument type; scope stays to "does this symbol exist and trade"
 
 ### v1.3.0 — SMH/SOXL Strategy Toggle
 - Add a second allocation table: QQQ / SMH (VanEck Semiconductor) / TQQQ / SOXL (Direxion Semiconductor 3x)

@@ -1,7 +1,7 @@
 # Product Requirements Document
 
 **Product:** VIX Strategy
-**Version:** 1.1.1
+**Version:** 1.2.0
 **Status:** Live — MVP shipped
 **Last Updated:** 2026-07-09
 
@@ -57,6 +57,7 @@ Arrives via GitHub, wants to understand how the strategy works technically, may 
 - As any visitor, when no cached value is available and the app is fetching live data, I want to see an animated loading counter (`Loading 1`, `Loading 2`, …) so that I know the app is working and not frozen.
 - As any visitor, if the VIX API is completely unreachable and there is no cached value, I want to see a clear error message (`Error Please Refresh`) instead of a silent blank, so that I know to retry.
 - As any visitor, I want the site to work even if the VIX data source is temporarily unreachable, so that I still see the most recent allocation.
+- As a retail investor who prefers different funds than the defaults, I want to substitute my own ticker into each risk category while keeping the same VIX-tier logic, so that I can apply the strategy's mechanics to funds I already hold or trust.
 
 ---
 
@@ -72,17 +73,18 @@ Arrives via GitHub, wants to understand how the strategy works technically, may 
 - **Loading counter:** When a live network fetch is required (no cache or stale cache), the VIX number area shows `Loading 1`, `Loading 2`, etc., incrementing every second until the response arrives. On total API failure with no cache, changes to `Error Please Refresh` (red).
 - **Auto-refresh:** strategy.html refreshes VIX every 60 seconds automatically.
 - **Manual refresh:** Button clears cache and forces a live fetch.
-- **Sticky navigation:** About / Dashboard / Support links with active-page green highlight and `aria-current="page"`.
+- **Sticky navigation:** About / Dashboard / Custom / Azqato Invests / Support links with active-page green highlight and `aria-current="page"`.
 - **Footer credit:** "Built by Azqato" with link on all pages.
 - **Responsive design:** Fully functional at 375px wide and up, with breakpoints at 900px, 768px, and 480px.
 
 ### Shipped Post-MVP
 
 - Server-side VIX data pipeline via GitHub Actions, `data/vix.js` as primary source, classic scripts for `file://` support (v1.1.0)
+- **Custom strategy builder (`custom.html`):** Free-text ticker entry per risk category (Risk Off / Diversify / Risk On / Full Risk), reusing the core strategy's VIX-tier percentage weights. Own live VIX feed, tier banner, chart, and allocation table. Selections persist in `localStorage` only. Ticker input is sanitized (character allowlist) but not verified against a live quote yet (v1.2.0)
 
 ### Future (Post-MVP)
 
-- Custom strategy builder — user-selectable tickers per risk category, new "Custom" tab (v1.2)
+- Live ticker verification for the Custom builder — confirm entered tickers resolve to a real quote before treating them as valid (v1.2.1)
 - SMH / SOXL "Growth Rocket" strategy as a toggle (v1.3)
 - Trend filter — QQQ vs. 200-day MA overlay (v1.4)
 - VIX percentile rank mode (v1.5)

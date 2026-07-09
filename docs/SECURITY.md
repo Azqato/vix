@@ -1,7 +1,7 @@
 # Security Document
 
 **Product:** VIX Strategy
-**Version:** 1.1.1
+**Version:** 1.2.0
 **Last Updated:** 2026-07-09
 
 ---
@@ -24,6 +24,7 @@ None. There are no user roles and no access-controlled resources. The applicatio
 |------|-----------------|----------|---------------|---------------------|
 | VIX cache | `localStorage` (browser-side) | Last VIX value (float), ISO timestamp, fetchedAt Unix ms | JavaScript running on the same origin only | Browser same-origin policy |
 | VIX data file | `data/vix.js` (repo, loaded via `<script src>`) | Last VIX value (float), ISO timestamp, fetchedAt Unix ms, assigned to `window.__VIX_DATA__` | Publicly readable, writable only by the `update-vix.yml` GitHub Actions workflow via `GITHUB_TOKEN` | Committed to `main` by a scheduled workflow only; no user input path can write to it |
+| Custom strategy tickers | `localStorage['vix_custom_tickers']` (browser-side) | Four ticker strings (Risk Off / Diversify / Risk On / Full Risk categories), sanitized to `[A-Z0-9.-]`, max 10 chars each | JavaScript running on the same origin only | Browser same-origin policy; input sanitized in `custom.js` before storage |
 
 **No user data of any kind is collected, stored server-side, or transmitted.** localStorage holds only the last-known VIX number and the timestamp of when it was fetched. It contains zero personally identifiable information (PII).
 
@@ -62,12 +63,23 @@ Every outbound request made by the application:
 
 ### DOM Injection via Rendered Data
 
-**Risk:** If VIX values or ETF names were inserted into the DOM unsanitized, they could carry XSS payloads.
+**Risk:** If VIX values, ETF names, or user-entered tickers were inserted into the DOM unsanitized, they could carry XSS payloads.
 
 **Mitigation:**
 - VIX values from the API are numbers — inserted via `.textContent`, which never executes HTML.
-- ETF names and descriptions are hardcoded constants in `strategy.js` (`TICKERS` object), not derived from any API response.
-- Template literals used for table row and legend HTML (`innerHTML`) render only from the `TICKERS` constant and numeric allocation values — never from user input or API text fields.
+- ETF names and descriptions on `index.html`/`strategy.html` are hardcoded constants in `strategy.js` (`TICKERS` object), not derived from any API response.
+- Template literals used for table row and legend HTML (`innerHTML`) on `index.html`/`strategy.html` render only from the `TICKERS` constant and numeric allocation values — never from user input or API text fields.
+- `custom.html` (v1.2.0) renders all four DOM surfaces that display user-entered ticker text (form label associations, chart legend, allocation table, Chart.js labels) using `document.createElement()` + `.textContent`/`.value` exclusively — no `innerHTML` string concatenation is used anywhere the ticker value is involved. This is deliberate: it's the first user-input surface in the app, so DOM-injection safety doesn't depend solely on the input sanitizer.
+
+### Custom Ticker Input (v1.2.0)
+
+**Risk:** `custom.html` is the first page in this app to accept free-text user input (a ticker per risk category). Unsanitized or unescaped user input is the single most common source of XSS in web applications.
+
+**Mitigation (defense in depth, two independent layers):**
+1. **Input sanitization** — `sanitizeTicker()` in `custom.js` uppercases the input and strips everything outside `[A-Z0-9.-]`, capped at 10 characters, before it's ever stored in `localStorage` or read back. This alone rules out `<`, `>`, `"`, `'`, and every other HTML-meaningful character.
+2. **Safe rendering** — even if the sanitizer were ever loosened or bypassed, every render path for that value uses `.textContent`/`.value`, not `innerHTML` (see above), so no string of characters could execute as markup.
+
+**Known limitation:** The ticker is not verified against a real quote (deferred to v1.2.1 — see `docs/ROADMAP.md`). A user can enter any string matching the sanitizer's charset, valid ticker or not; this is a data-quality gap, not a security one, since the rendering path is already injection-safe regardless of whether the ticker "means" anything.
 
 ### CDN Compromise (Chart.js)
 
@@ -83,9 +95,9 @@ Every outbound request made by the application:
 
 **Mitigation:** The only write path to `data/vix.js` is the `update-vix.yml` GitHub Actions workflow, which generates the file from a template with two numeric/string values interpolated from Yahoo Finance's own response fields (`regularMarketPrice`, `regularMarketTime`) — no other input reaches this file. Repository branch protection and `GITHUB_TOKEN` scoping to this repo are the operative controls; this is the same trust boundary as any other file in `main`.
 
-### No User Input
+### User Input Surface
 
-There is no user input anywhere in this application. There are no forms, no search fields, no query parameters that affect rendering. This eliminates the majority of the traditional web attack surface (XSS via input, SQL injection, CSRF, etc.).
+As of v1.2.0, `custom.html` accepts free-text ticker input per risk category (see "Custom Ticker Input" above) — the only user input in the app. `index.html` and `strategy.html` remain entirely read-only with no forms, search fields, or query parameters that affect rendering. There is no SQL injection surface (no database), and no CSRF surface (no authenticated state, no server-side mutations to forge).
 
 ---
 

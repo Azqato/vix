@@ -1,8 +1,8 @@
 # Design Document
 
 **Product:** VIX Strategy
-**Version:** 1.0.11
-**Last Updated:** 2026-06-08
+**Version:** 1.2.0
+**Last Updated:** 2026-07-09
 
 ---
 
@@ -153,6 +153,10 @@ Base unit: **4px** (0.25rem). All layout spacing uses one of these seven tokens.
 ### Navigation Links (`.nav-link`)
 
 Pill-shaped, monospace. Default: `--text-secondary` color, transparent border. Hover: `--text-primary` color, faint `--border` visible. Active (`.nav-active`): `--accent-green` color, `--border-accent` border, `rgba(0,255,136,0.08)` background. The active class is hardcoded per page in HTML; no JS required.
+
+### Form Inputs (`.customize-input`, v1.2.0)
+
+Same dark-card, monospace aesthetic as the rest of the site, applied to text inputs for the first time (Custom strategy builder). Background: `--bg-card`. Border: `--border`, uppercase text, bold weight, letter-spacing to match `.nav-link`/`.tier-banner`. Focus state: `--accent-green` border with a soft glow (`box-shadow`), consistent with how focus/active states are treated elsewhere (nav-active links, live badges).
 
 ### Cards (`.card`)
 

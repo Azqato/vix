@@ -1,7 +1,7 @@
 # Technical Requirements Document
 
 **Product:** VIX Strategy
-**Version:** 1.1.1
+**Version:** 1.2.0
 **Last Updated:** 2026-07-09
 
 ---
@@ -45,7 +45,7 @@ Data flow for `data/vix.js` itself:
 
 | Layer | Technology | Version | Notes |
 |-------|-----------|---------|-------|
-| Markup | HTML5 | — | Two pages: index.html, strategy.html |
+| Markup | HTML5 | — | Three pages: index.html, strategy.html, custom.html |
 | Styling | CSS3 with custom properties | — | Single file: assets/css/styles.css |
 | Logic | Vanilla JavaScript | ES2020+ | Classic scripts (`<script src>`, no `type="module"`), each attaching to a `window.*` namespace — chosen so the site works under `file://`, not just HTTP(S) |
 | Charts | Chart.js | 4.4.0 | Loaded as CDN UMD synchronous `<script>` tag |
@@ -63,6 +63,7 @@ Data flow for `data/vix.js` itself:
 vix/
 ├── index.html              # Pitch page — explains strategy rationale
 ├── strategy.html           # Live dashboard — real-time VIX allocation
+├── custom.html             # Custom strategy builder — user-chosen tickers per risk category
 ├── data/
 │   └── vix.js              # window.__VIX_DATA__ = { value, timestamp, fetchedAt } — written by update-vix.yml
 ├── .github/
@@ -74,7 +75,8 @@ vix/
 │   ├── js/
 │   │   ├── vix.js          # window.VixData — VIX read (data file + proxy fallback), localStorage cache
 │   │   ├── strategy.js     # window.VixStrategy — getTier(), getAllocation(), TICKERS, ALL_TIERS
-│   │   └── chart.js        # window.VixChart — initChart(), updateChart(), centerTextPlugin
+│   │   ├── chart.js        # window.VixChart — initChart(), updateChart(), centerTextPlugin
+│   │   └── custom.js       # window.VixCustom — CATEGORIES, getCustomConfig(), saveCustomConfig(), sanitizeTicker()
 │   └── img/
 │       ├── logo.svg        # VIX wordmark with volatility spike polyline
 │       └── favicon.svg     # Emoji favicon (📈 in SVG)
@@ -146,7 +148,24 @@ Written by `.github/workflows/update-vix.yml`; loaded via a plain `<script src="
 { BIL: number; SPY: number; QQQ: number; TQQQ: number; }
 ```
 
-All four values are percentages. They sum to exactly 100.0.
+All four values are percentages. They sum to exactly 100.0. `custom.html` reuses this object unmodified — the keys (`BIL`/`SPY`/`QQQ`/`TQQQ`) are fixed "slots" for percentage math; only the *displayed* ticker per slot differs (see Custom Ticker Config below).
+
+### Custom Ticker Config — stored in `localStorage['vix_custom_tickers']`
+
+```json
+{
+  "RISK_OFF": "BIL",
+  "DIVERSIFY": "SPY",
+  "RISK_ON": "QQQ",
+  "FULL_RISK": "TQQQ"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `RISK_OFF` / `DIVERSIFY` / `RISK_ON` / `FULL_RISK` | string | User-entered ticker for that category, sanitized by `sanitizeTicker()` in `custom.js`: uppercased, restricted to `[A-Z0-9.-]`, max 10 characters. Defaults to the core strategy's ticker for that slot (BIL/SPY/QQQ/TQQQ respectively) if empty, invalid, or unset. |
+
+Written and read by `getCustomConfig()`/`saveCustomConfig()`/`resetCustomConfig()` in `custom.js`. Each category also carries a fixed `slot` (`RISK_OFF` → `BIL`, `DIVERSIFY` → `SPY`, `RISK_ON` → `QQQ`, `FULL_RISK` → `TQQQ`) used only to look up the correct percentage from the `Allocation Object` above — the slot names are internal plumbing, never shown in the UI.
 
 ### Tier Key
 
@@ -179,9 +198,9 @@ All four values are percentages. They sum to exactly 100.0.
 
 Since there is no server, this section documents the browser-side data flow.
 
-### Script load order (both pages)
+### Script load order (all three pages)
 
-`data/vix.js` → `assets/js/vix.js` → `assets/js/strategy.js` → (`assets/js/chart.js`, strategy.html only) → inline `<script>`. All are classic scripts (no `type="module"`), loaded in this exact order at the end of `<body>`, so each namespace (`window.VixStrategy`, `window.VixData`, `window.VixChart`) exists by the time later scripts and the inline boot code run.
+`data/vix.js` → `assets/js/vix.js` → `assets/js/strategy.js` → `assets/js/chart.js` (strategy.html and custom.html only) → `assets/js/custom.js` (custom.html only) → inline `<script>`. All are classic scripts (no `type="module"`), loaded in this exact order at the end of `<body>`, so each namespace (`window.VixStrategy`, `window.VixData`, `window.VixChart`, `window.VixCustom`) exists by the time later scripts and the inline boot code run.
 
 ### index.html boot sequence
 
@@ -196,6 +215,15 @@ Since there is no server, this section documents the browser-side data flow.
 2. `refresh()` — fires async, calls all update functions when live value arrives.
 3. `setInterval(refresh, 60_000)` — repeats live fetch every 60 seconds.
 4. Refresh button — clears `localStorage['vix_last_known']`, then calls `refresh()`.
+
+### custom.html boot sequence
+
+1. `getCustomConfig()` reads `localStorage['vix_custom_tickers']` synchronously (falls back to BIL/SPY/QQQ/TQQQ defaults) and `buildFormFields()` populates the four ticker inputs.
+2. `paintCached()` — reads the VIX localStorage cache, renders VIX number, tier banner, chart (with custom ticker labels), and allocation table immediately, same pattern as strategy.html.
+3. `refresh()` — fires async, same VIX fetch path as strategy.html (`window.VixData.fetchVIX()`), re-renders on resolve.
+4. `setInterval(refresh, 60_000)` — repeats live fetch every 60 seconds, same as strategy.html.
+5. Save button (`customize-form` submit) — reads the four inputs, calls `saveCustomConfig()`, rebuilds the form fields with sanitized values, and re-renders the chart/legend/table against the currently cached VIX value (no new VIX fetch needed — only the ticker labels changed).
+6. Reset button — calls `resetCustomConfig()`, rebuilds the form with defaults, re-renders.
 
 ### VIX fetch sequence — inside `fetchVIX()`
 
@@ -218,13 +246,14 @@ Since there is no server, this section documents the browser-side data flow.
 
 ## State Management
 
-All state lives in exactly two places:
+All state lives in these places:
 
 | Location | Contents | Lifetime |
 |----------|----------|---------|
 | `localStorage['vix_last_known']` | Serialized VIX value, ISO timestamp, fetchedAt Unix ms | Persists indefinitely across tabs, pages, and browser restarts until cleared by Refresh button or user |
+| `localStorage['vix_custom_tickers']` | Four sanitized ticker strings, one per risk category | Persists indefinitely until Reset button or user clears it; only read/written by `custom.html` |
 | `data/vix.js` (repo) → `window.__VIX_DATA__` | VIX value, ISO timestamp, fetchedAt Unix ms | Overwritten by `update-vix.yml` on each successful scheduled run; otherwise persists as the last-known value |
-| DOM | Rendered VIX number, tier label, chart data, table rows, badge state | Page session only; repopulated on each boot from cache + live fetch |
+| DOM | Rendered VIX number, tier label, chart data, table rows, badge state, form field values | Page session only; repopulated on each boot from cache + live fetch (+ custom config on custom.html) |
 
 There is no in-memory state object, no reactive framework, and no event bus. Each page reads from localStorage and renders directly to the DOM.
 

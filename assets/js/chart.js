@@ -30,7 +30,7 @@ const centerTextPlugin = {
   },
 };
 
-function initChart(canvasId) {
+function initChart(canvasId, labels) {
   // Chart is the global exposed by the UMD script tag.
   const ChartJS = window.Chart;
   const TICKERS = window.VixStrategy.TICKERS;
@@ -48,7 +48,7 @@ function initChart(canvasId) {
     type: 'doughnut',
     plugins: [centerTextPlugin],
     data: {
-      labels: ['BIL', 'SPY', 'QQQ', 'TQQQ'],
+      labels: labels ?? ['BIL', 'SPY', 'QQQ', 'TQQQ'],
       datasets: [
         {
           data: [25, 50, 20, 5],
@@ -88,13 +88,16 @@ function initChart(canvasId) {
   });
 }
 
-function updateChart(chartInstance, allocation, vixValue) {
+function updateChart(chartInstance, allocation, vixValue, labels) {
   chartInstance.data.datasets[0].data = [
     allocation.BIL,
     allocation.SPY,
     allocation.QQQ,
     allocation.TQQQ,
   ];
+  if (labels) {
+    chartInstance.data.labels = labels;
+  }
   chartInstance.options.plugins.centerText = {
     value: typeof vixValue === 'number' ? vixValue.toFixed(2) : '--',
   };

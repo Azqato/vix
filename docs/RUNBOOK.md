@@ -1,7 +1,7 @@
 # Runbook
 
 **Product:** VIX Strategy
-**Version:** 1.1.1
+**Version:** 1.2.0
 **Last Updated:** 2026-07-09
 
 ---
@@ -119,7 +119,7 @@ There is no staging environment. Test all changes locally before pushing to `mai
 
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
-| VIX shows `--`, no tier badge, no chart | One of the four `<script>` tags failed to load (check DevTools console for a 404 or syntax error) | Verify `data/vix.js`, `assets/js/vix.js`, `assets/js/strategy.js`, `assets/js/chart.js` all load without error, in that order |
+| VIX shows `--`, no tier badge, no chart | One of the required `<script>` tags failed to load (check DevTools console for a 404 or syntax error) | Verify `data/vix.js`, `assets/js/vix.js`, `assets/js/strategy.js`, `assets/js/chart.js` (and `assets/js/custom.js` on custom.html) all load without error, in that order |
 | VIX shows `STALE` badge | `window.__VIX_DATA__` unavailable and allorigins.win proxy also unreachable, or Yahoo Finance changed their API | Click Refresh; check `https://azqato.github.io/vix/data/vix.js` and `https://api.allorigins.win/` directly; check the **Actions** tab for `update-vix.yml` failures |
 | `data/vix.js` not updating during market hours | `update-vix.yml` run failed (Yahoo endpoint changed/unreachable) or repo went 60+ days without a commit (GitHub auto-disables scheduled workflows) | Check the **Actions** tab; re-run manually via `workflow_dispatch` if needed; push any commit to re-enable a disabled schedule |
 | VIX shows `ERROR` badge and `--` | Live fetch failed and no prior cached value | Check network; click Refresh after a moment |
@@ -128,7 +128,8 @@ There is no staging environment. Test all changes locally before pushing to `mai
 | Cached VIX is very old (hours or days old) | localStorage was not cleared; Refresh button not clicked | Click Refresh; `localStorage['vix_last_known']` is cleared by the button |
 | `Unexpected VIX response shape` in console | Yahoo Finance changed their API response structure | Update `parseResponse()` in `vix.js` to match the new field path |
 | `window.Chart is not defined` | Chart.js CDN `<script>` tag failed to load before the scripts below it ran | Verify the CDN URL; check jsDelivr status; ensure the CDN `<script src>` is the first script tag in `strategy.html` |
-| `Cannot read properties of undefined (reading 'TICKERS' / 'getCachedVIX' / etc.)` | A `<script>` tag is missing or out of order | Confirm the script order in `<body>`: `data/vix.js` → `assets/js/vix.js` → `assets/js/strategy.js` → `assets/js/chart.js` (strategy.html only) → inline `<script>` |
+| `Cannot read properties of undefined (reading 'TICKERS' / 'getCachedVIX' / 'CATEGORIES' / etc.)` | A `<script>` tag is missing or out of order | Confirm the script order in `<body>`: `data/vix.js` → `assets/js/vix.js` → `assets/js/strategy.js` → `assets/js/chart.js` (strategy.html, custom.html) → `assets/js/custom.js` (custom.html only) → inline `<script>` |
+| Custom page shows stale ticker after Save | `buildFormFields()`/re-render not called, or an unrelated JS error interrupted the submit handler | Check DevTools console for errors; confirm `localStorage['vix_custom_tickers']` updated after clicking Save |
 | Site deploys but shows old version | Browser cache serving stale files | Hard refresh (`Ctrl+Shift+R` / `Cmd+Shift+R`); GitHub Pages CDN cache clears within minutes of deploy |
 
 ---
