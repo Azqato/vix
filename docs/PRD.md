@@ -66,7 +66,7 @@ Arrives via GitHub, wants to understand how the strategy works technically, may 
 
 - **Pitch page (index.html):** Hero with live VIX gauge, problem statement, VIX insight section, strategy allocation table, AI/semiconductor thesis, risk disclosure, footer CTA.
 - **Strategy dashboard (strategy.html):** Live VIX number with status badge and Eastern Time timestamp, active tier banner, Chart.js doughnut chart with VIX value in center, allocation breakdown table, full tier reference table with active tier highlighted, strategy summary accordion.
-- **Live VIX data:** Fetched from Yahoo Finance JSON API via allorigins.win CORS proxy. No backend required.
+- **Live VIX data:** Primary source is `data/vix.js`, refreshed on a schedule by a GitHub Actions workflow that fetches Yahoo Finance server-side (v1.1.0). Falls back to a direct browser fetch via allorigins.win CORS proxy if the data file is unavailable. No backend required.
 - **localStorage caching:** VIX value persists across tabs and browser sessions. 30-minute TTL. Instant synchronous read on page load.
 - **Status badges:** LIVE / CACHED / STALE / ERROR states with distinct colors.
 - **Loading counter:** When a live network fetch is required (no cache or stale cache), the VIX number area shows `Loading 1`, `Loading 2`, etc., incrementing every second until the response arrives. On total API failure with no cache, changes to `Error Please Refresh` (red).
@@ -76,13 +76,18 @@ Arrives via GitHub, wants to understand how the strategy works technically, may 
 - **Footer credit:** "Built by Azqato" with link on all pages.
 - **Responsive design:** Fully functional at 375px wide and up, with breakpoints at 900px, 768px, and 480px.
 
+### Shipped Post-MVP
+
+- Server-side VIX data pipeline via GitHub Actions, `data/vix.js` as primary source, classic scripts for `file://` support (v1.1.0)
+
 ### Future (Post-MVP)
 
-- SMH / SOXL "Growth Rocket" strategy as a toggle (v1.1)
-- Trend filter — QQQ vs. 200-day MA overlay (v1.2)
-- VIX percentile rank mode (v1.3)
-- 12-month historical VIX sparkline (v1.4)
-- Backtesting visualization using Yahoo Finance historical data (v1.5)
+- Custom strategy builder — user-selectable tickers per risk category, new "Custom" tab (v1.2)
+- SMH / SOXL "Growth Rocket" strategy as a toggle (v1.3)
+- Trend filter — QQQ vs. 200-day MA overlay (v1.4)
+- VIX percentile rank mode (v1.5)
+- 12-month historical VIX sparkline (v1.6)
+- Backtesting visualization using Yahoo Finance historical data (v1.7)
 - Full portfolio tracker with user-entered holdings (v2.0)
 
 ---
@@ -130,7 +135,7 @@ Additional tickers: **SMH** (VanEck Semiconductor ETF), **SOXL** (Direxion Daily
 
 - **Hosting:** GitHub Pages — static files only, no server-side execution.
 - **No build tooling:** No Node.js, no bundler, no npm. Must deploy as raw files.
-- **CORS:** Yahoo Finance API blocks direct browser requests. All VIX fetches must go through a public CORS proxy.
+- **CORS:** Yahoo Finance API blocks direct browser requests. The primary data path avoids this entirely (server-side fetch via GitHub Actions, committed to the repo). The fallback path, used only if the committed data is unavailable, must go through a public CORS proxy.
 - **Legal:** Risk disclaimer must be displayed on every page that mentions TQQQ.
 - **No data collection:** Zero analytics, zero cookies, zero user tracking in current version.
 
@@ -138,7 +143,8 @@ Additional tickers: **SMH** (VanEck Semiconductor ETF), **SOXL** (Direxion Daily
 
 ## Assumptions
 
-- The allorigins.win CORS proxy remains publicly available at no cost.
+- The allorigins.win CORS proxy remains publicly available at no cost (fallback path only, as of v1.1.0).
+- GitHub Actions scheduled workflows remain enabled (requires at least one commit every 60 days to avoid GitHub's auto-disable).
 - Yahoo Finance's internal JSON API (`/v8/finance/chart/`) continues to return VIX data with the field `chart.result[0].meta.regularMarketPrice`.
 - Users are already familiar with ETF investing concepts; no onboarding flow is required.
 - VIX values remain within 0–100; the tier5 catch-all handles any value ≥ 45.

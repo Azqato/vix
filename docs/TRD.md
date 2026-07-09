@@ -14,28 +14,30 @@ VIX Strategy is a **fully static, browser-only application** deployed on GitHub 
 GitHub Actions (update-vix.yml)                     Browser
   8 fixed cron runs/weekday, EST-basis                └── index.html  /  strategy.html
     │                                                        ├── assets/css/styles.css      (all styling)
-    ├── [External] Yahoo Finance JSON API                    ├── assets/js/vix.js           (data fetch + localStorage cache)
-    │     (direct — no CORS restriction server-side)          ├── assets/js/strategy.js      (tier logic + allocation)
-    │                                                        └── assets/js/chart.js         (Chart.js 4.4.0 wrapper)
-    └── commits → data/vix.json ──────────────────────────────────┤
-                                                                    ├── [same-origin] data/vix.json   (primary VIX source)
+    ├── [External] Yahoo Finance JSON API                    ├── data/vix.js                (window.__VIX_DATA__ global)
+    │     (direct — no CORS restriction server-side)          ├── assets/js/vix.js           (data read + localStorage cache)
+    │                                                        ├── assets/js/strategy.js      (tier logic + allocation)
+    └── commits → data/vix.js ────────────────────────────────┤ assets/js/chart.js         (Chart.js 4.4.0 wrapper)
+                                                                    │
                                                                     ├── [CDN] Chart.js 4.4.0 — jsdelivr.net
                                                                     └── [External, fallback only] Yahoo Finance JSON API
                                                                           └── via allorigins.win CORS proxy
 ```
 
+All four scripts (`data/vix.js`, `assets/js/vix.js`, `assets/js/strategy.js`, `assets/js/chart.js`) are loaded as plain classic `<script src="...">` tags, in that order, followed by an inline `<script>` — no `type="module"`. Each file attaches its exports to a `window.*` namespace (`window.VixData`, `window.VixStrategy`, `window.VixChart`) instead of using `import`/`export`. This is a deliberate choice: `type="module"` scripts are blocked entirely by browsers when loaded via `file://`, which broke the site whenever someone opened `index.html` directly instead of through a server. Classic scripts execute under `file://`, `http://localhost`, and GitHub Pages identically.
+
 Data flow on each page load:
 1. `getCachedVIX()` reads `localStorage` synchronously — zero network latency.
-2. If the cached value is ≥30 min old (or absent), `fetchVIX()` fetches `data/vix.json` (same-origin, no proxy). If that fails, it falls back to the CORS-proxied Yahoo Finance request.
+2. If the cached value is ≥30 min old (or absent), `fetchVIX()` reads `window.__VIX_DATA__` (set synchronously by `data/vix.js`, no network call, no CORS concern). If that global is unavailable, it falls back to the CORS-proxied Yahoo Finance request.
 3. `getTier(vixValue)` maps the number to one of 5 string keys (`tier1`–`tier5`).
 4. `getAllocation(tier)` returns a normalized `{ BIL, SPY, QQQ, TQQQ }` percentage object.
 5. `initChart()` / `updateChart()` render or update the doughnut chart on strategy.html.
 
-Data flow for `data/vix.json` itself:
+Data flow for `data/vix.js` itself:
 1. `.github/workflows/update-vix.yml` runs on 8 fixed cron schedules per weekday (9:45am–4:45pm ET, hourly, fixed to EST/UTC-5 year-round — see Third-Party Integrations below for the DST tradeoff).
 2. The workflow calls the Yahoo Finance endpoint directly from the runner (no CORS proxy needed outside a browser).
-3. On success, it writes `data/vix.json` and commits/pushes only if the value changed.
-4. On failure, the step is skipped and the previous `data/vix.json` value remains live until the next scheduled run.
+3. On success, it writes `data/vix.js` (a `window.__VIX_DATA__ = {...}` assignment, not JSON) and commits/pushes only if the value changed.
+4. On failure, the step is skipped and the previous `data/vix.js` value remains live until the next scheduled run.
 
 ---
 
@@ -45,12 +47,12 @@ Data flow for `data/vix.json` itself:
 |-------|-----------|---------|-------|
 | Markup | HTML5 | — | Two pages: index.html, strategy.html |
 | Styling | CSS3 with custom properties | — | Single file: assets/css/styles.css |
-| Logic | Vanilla JavaScript | ES2020+ | ES Modules (`type="module"`) throughout |
+| Logic | Vanilla JavaScript | ES2020+ | Classic scripts (`<script src>`, no `type="module"`), each attaching to a `window.*` namespace — chosen so the site works under `file://`, not just HTTP(S) |
 | Charts | Chart.js | 4.4.0 | Loaded as CDN UMD synchronous `<script>` tag |
-| VIX data (primary) | `data/vix.json` (repo file) | — | Same-origin fetch; refreshed by scheduled GitHub Actions workflow |
-| VIX data (fallback) | Yahoo Finance JSON API | v8 | Not browser-accessible directly; requires CORS proxy. Only used if `data/vix.json` fetch fails |
+| VIX data (primary) | `data/vix.js` (repo file) | — | `window.__VIX_DATA__` global, loaded via `<script src>`; refreshed by scheduled GitHub Actions workflow; no network call from the browser |
+| VIX data (fallback) | Yahoo Finance JSON API | v8 | Not browser-accessible directly; requires CORS proxy. Only used if `window.__VIX_DATA__` is unavailable |
 | CORS proxy | allorigins.win | — | Public, unauthenticated relay service; fallback path only |
-| Scheduled data refresh | GitHub Actions (`update-vix.yml`) | — | 8 fixed cron runs per weekday, fetches Yahoo Finance directly (no proxy) and commits `data/vix.json` |
+| Scheduled data refresh | GitHub Actions (`update-vix.yml`) | — | 8 fixed cron runs per weekday, fetches Yahoo Finance directly (no proxy) and commits `data/vix.js` |
 | Hosting | GitHub Pages | — | Serves static files from `main` branch root |
 
 ---
@@ -62,17 +64,17 @@ vix/
 ├── index.html              # Pitch page — explains strategy rationale
 ├── strategy.html           # Live dashboard — real-time VIX allocation
 ├── data/
-│   └── vix.json            # { value, timestamp, fetchedAt } — written by update-vix.yml
+│   └── vix.js              # window.__VIX_DATA__ = { value, timestamp, fetchedAt } — written by update-vix.yml
 ├── .github/
 │   └── workflows/
-│       └── update-vix.yml  # Scheduled Yahoo Finance fetch → commits data/vix.json
+│       └── update-vix.yml  # Scheduled Yahoo Finance fetch → commits data/vix.js
 ├── assets/
 │   ├── css/
 │   │   └── styles.css      # All styles; CSS custom properties for theming
 │   ├── js/
-│   │   ├── vix.js          # VIX fetch (data file + proxy fallback), localStorage cache, getCachedVIX()
-│   │   ├── strategy.js     # getTier(), getAllocation(), TICKERS, ALL_TIERS
-│   │   └── chart.js        # initChart(), updateChart(), centerTextPlugin
+│   │   ├── vix.js          # window.VixData — VIX read (data file + proxy fallback), localStorage cache
+│   │   ├── strategy.js     # window.VixStrategy — getTier(), getAllocation(), TICKERS, ALL_TIERS
+│   │   └── chart.js        # window.VixChart — initChart(), updateChart(), centerTextPlugin
 │   └── img/
 │       ├── logo.svg        # VIX wordmark with volatility spike polyline
 │       └── favicon.svg     # Emoji favicon (📈 in SVG)
@@ -94,14 +96,14 @@ vix/
 
 ## Data Models
 
-### VIX Data File — `data/vix.json`
+### VIX Data File — `data/vix.js`
 
-```json
-{
+```javascript
+window.__VIX_DATA__ = {
   "value": 15.98,
   "timestamp": "2026-07-09T17:48:01.000Z",
   "fetchedAt": 1783620198259
-}
+};
 ```
 
 | Field | Type | Description |
@@ -110,7 +112,7 @@ vix/
 | `timestamp` | ISO 8601 string | `regularMarketTime` from Yahoo Finance, converted from Unix seconds |
 | `fetchedAt` | Unix ms | When the GitHub Actions run wrote this value |
 
-Written by `.github/workflows/update-vix.yml`; read by `fetchFromDataFile()` in `vix.js` as the primary VIX source.
+Written by `.github/workflows/update-vix.yml`; loaded via a plain `<script src="data/vix.js">` tag (not `fetch()`) so it works under `file://` as well as HTTP(S). Read synchronously by `getDataFileVIX()` in `vix.js` as the primary VIX source.
 
 ### VIX Cache Entry — stored in `localStorage['vix_last_known']`
 
@@ -158,7 +160,7 @@ All four values are percentages. They sum to exactly 100.0.
 | `tier4` | 35–45 | High Fear |
 | `tier5` | ≥ 45 | Extreme Fear (Crisis) |
 
-### TICKERS Object — exported from `strategy.js`
+### TICKERS Object — `window.VixStrategy.TICKERS`, defined in `strategy.js`
 
 ```typescript
 {
@@ -177,9 +179,13 @@ All four values are percentages. They sum to exactly 100.0.
 
 Since there is no server, this section documents the browser-side data flow.
 
+### Script load order (both pages)
+
+`data/vix.js` → `assets/js/vix.js` → `assets/js/strategy.js` → (`assets/js/chart.js`, strategy.html only) → inline `<script>`. All are classic scripts (no `type="module"`), loaded in this exact order at the end of `<body>`, so each namespace (`window.VixStrategy`, `window.VixData`, `window.VixChart`) exists by the time later scripts and the inline boot code run.
+
 ### index.html boot sequence
 
-1. Inline `<script type="module">` imports `getCachedVIX` from `vix.js` and `getTier` from `strategy.js`.
+1. Inline `<script>` reads `getCachedVIX`/`fetchVIX` from `window.VixData` and `getTier` from `window.VixStrategy`.
 2. `getCachedVIX()` reads `localStorage` synchronously — no network wait.
 3. If a cached value exists, `updateGauge(cached.value)` sets the hero VIX display and tier badge immediately.
 4. `fetchVIX()` fires asynchronously. On resolve, `updateGauge()` overwrites if the value changed.
@@ -194,8 +200,8 @@ Since there is no server, this section documents the browser-side data flow.
 ### VIX fetch sequence — inside `fetchVIX()`
 
 1. Call `getCachedVIX()`. If age < 30 min, return immediately — no HTTP request.
-2. Try `data/vix.json` (same-origin, `cache: 'no-store'`).
-3. On failure, fall back to proxy URL 1 (`query1.finance.yahoo.com` via allorigins.win).
+2. Read `window.__VIX_DATA__` via `getDataFileVIX()` — synchronous, no network, works under `file://`.
+3. If that global is missing/malformed, fall back to proxy URL 1 (`query1.finance.yahoo.com` via allorigins.win).
 4. On failure, fall back to proxy URL 2 (`query2.finance.yahoo.com` via allorigins.win).
 5. On success: save to `localStorage`, return `{ ...result, fromCache: false, stale: false }`.
 6. On total failure but cache present: return `{ ...cached, stale: true }`.
@@ -205,8 +211,8 @@ Since there is no server, this section documents the browser-side data flow.
 
 1. Cron fires on one of 8 fixed weekday schedules (see Third-Party Integrations below).
 2. Fetch `query1.finance.yahoo.com` directly from the runner; on failure, try `query2.finance.yahoo.com`.
-3. On success: write `data/vix.json`, commit and push only if the value changed from the last commit.
-4. On total failure: skip the commit step entirely; the previous `data/vix.json` stays live until the next scheduled run.
+3. On success: write `data/vix.js` (a `window.__VIX_DATA__ = {...}` assignment), commit and push only if the value changed from the last commit.
+4. On total failure: skip the commit step entirely; the previous `data/vix.js` stays live until the next scheduled run.
 
 ---
 
@@ -217,7 +223,7 @@ All state lives in exactly two places:
 | Location | Contents | Lifetime |
 |----------|----------|---------|
 | `localStorage['vix_last_known']` | Serialized VIX value, ISO timestamp, fetchedAt Unix ms | Persists indefinitely across tabs, pages, and browser restarts until cleared by Refresh button or user |
-| `data/vix.json` (repo) | VIX value, ISO timestamp, fetchedAt Unix ms | Overwritten by `update-vix.yml` on each successful scheduled run; otherwise persists as the last-known value |
+| `data/vix.js` (repo) → `window.__VIX_DATA__` | VIX value, ISO timestamp, fetchedAt Unix ms | Overwritten by `update-vix.yml` on each successful scheduled run; otherwise persists as the last-known value |
 | DOM | Rendered VIX number, tier label, chart data, table rows, badge state | Page session only; repopulated on each boot from cache + live fetch |
 
 There is no in-memory state object, no reactive framework, and no event bus. Each page reads from localStorage and renders directly to the DOM.
@@ -234,8 +240,9 @@ There is no in-memory state object, no reactive framework, and no event bus. Eac
 | Schedule basis | Fixed to EST (UTC-5) year-round — intentionally not DST-aware |
 | Nominal times (EST, Nov–Mar) | 9:45am, 10:45am, 11:45am, 12:45pm, 1:45pm, 2:45pm, 3:45pm, 4:45pm ET |
 | Actual times during EDT (Mar–Nov) | Same list, shifted one hour later (e.g. the close-of-day run lands at 5:45pm ET instead of 4:45pm) |
-| Permissions | `contents: write`, to commit `data/vix.json` back to `main` |
-| Failure mode | Fetch step failure skips the commit; previous `data/vix.json` stays live until the next scheduled run |
+| Permissions | `contents: write`, to commit `data/vix.js` back to `main` |
+| Failure mode | Fetch step failure skips the commit; previous `data/vix.js` stays live until the next scheduled run |
+| Runner Node version | `actions/checkout@v7` (targets Node 24 natively — v4 was forced onto Node 24 with a deprecation warning since it targets Node 20) |
 
 The DST drift is an accepted tradeoff for a simple, fixed, low-frequency schedule (8 runs/weekday, no polling) — see `docs/ROADMAP.md` v1.1.0.
 
@@ -257,7 +264,7 @@ The DST drift is an accepted tradeoff for a simple, fixed, low-frequency schedul
 | Endpoint | `https://api.allorigins.win/raw?url=<encoded-target>` |
 | Authentication | None — free public service |
 | SLA | None |
-| Role | Fallback only, used by the browser if `data/vix.json` is unreachable |
+| Role | Fallback only, used by the browser if `window.__VIX_DATA__` is unavailable |
 | Failure mode | On outage: `fetchVIX()` falls back to cached value with `stale: true` |
 | History | Replaced `corsproxy.io` in v1.0.2; `corsproxy.io` blocked by Yahoo Finance (HTTP 403) |
 
@@ -268,7 +275,7 @@ The DST drift is an accepted tradeoff for a simple, fixed, low-frequency schedul
 | URL | `https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js` |
 | Version | Pinned to 4.4.0 |
 | Authentication | None |
-| Load order | Synchronous `<script>` tag before any `type="module"` script — sets `window.Chart` |
+| Load order | Synchronous `<script>` tag before the classic scripts below it — sets `window.Chart` |
 | Failure mode | Chart canvas is blank; VIX value and allocation tables still render |
 | SRI hash | Not implemented (known debt — see below) |
 
@@ -291,7 +298,8 @@ The DST drift is an accepted tradeoff for a simple, fixed, low-frequency schedul
 
 | Item | Current approach | Correct approach |
 |------|-----------------|-----------------|
-| ~~CORS proxy dependency~~ | Resolved in v1.1.0 — `data/vix.json` (fetched server-side by `update-vix.yml`) is now the primary source; allorigins.win is fallback only | Once the data-file path is verified stable in production, the proxy fallback can be removed from `vix.js` entirely |
+| ~~CORS proxy dependency~~ | Resolved in v1.1.0 — `data/vix.js` (fetched server-side by `update-vix.yml`, loaded via `<script src>`) is now the primary source; allorigins.win is fallback only | Once the data-file path is verified stable in production, the proxy fallback can be removed from `vix.js` entirely |
+| ~~ES modules blocked under `file://`~~ | Resolved in v1.1.0 — `vix.js`/`strategy.js`/`chart.js` converted from `type="module"`/`import`/`export` to classic `<script src>` tags with `window.*` namespaces | None — this was the correct approach, adopted to fix `file://` support |
 | No SRI hash on Chart.js CDN | `<script src>` has no `integrity` attribute | Add `integrity="sha384-..."` to protect against CDN compromise |
 | No fallback for chart failure | Blank canvas if jsDelivr is unreachable | Detect CDN load failure (`window.Chart` undefined) and render a text-only allocation display |
 | Normalization is a no-op | Raw allocations already sum to 100%; normalization runs but changes nothing | Remove normalization or add an assertion that values sum to 100 |

@@ -9,12 +9,14 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [1.1.0] – 2026-07-09
 
 ### Added
-- `.github/workflows/update-vix.yml` — Scheduled GitHub Actions workflow that fetches VIX directly from Yahoo Finance server-side (no CORS proxy needed) and commits the result to `data/vix.json`. Runs on 8 fixed cron schedules per weekday (9:45am–4:45pm ET, fixed to EST/UTC-5 year-round — drifts one hour later during EDT, an accepted tradeoff for a simple fixed schedule with no polling). Also supports manual `workflow_dispatch` runs.
-- `data/vix.json` — New repo-committed data file: `{ value, timestamp, fetchedAt }`, refreshed by the workflow above.
-- `assets/js/vix.js` — `fetchFromDataFile()` added; `fetchVIX()` now tries `data/vix.json` (same-origin, no proxy) first, falling back to the existing allorigins.win proxy path only if the data file fetch fails.
+- `.github/workflows/update-vix.yml` — Scheduled GitHub Actions workflow that fetches VIX directly from Yahoo Finance server-side (no CORS proxy needed) and commits the result to `data/vix.js`. Runs on 8 fixed cron schedules per weekday (9:45am–4:45pm ET, fixed to EST/UTC-5 year-round — drifts one hour later during EDT, an accepted tradeoff for a simple fixed schedule with no polling). Also supports manual `workflow_dispatch` runs. Uses `actions/checkout@v7` (Node 24 native).
+- `data/vix.js` — New repo-committed data file: `window.__VIX_DATA__ = { value, timestamp, fetchedAt }`, refreshed by the workflow above. Loaded via `<script src>`, not `fetch()`.
 
 ### Changed
-- `docs/TRD.md`, `docs/SECURITY.md`, `docs/RUNBOOK.md`, `docs/ROADMAP.md` — updated to document the new server-side data pipeline, its third-party trust footprint, and monitoring steps.
+- `assets/js/vix.js`, `assets/js/strategy.js`, `assets/js/chart.js` — Converted from ES modules (`type="module"`, `import`/`export`) to classic scripts attaching to `window.VixData`, `window.VixStrategy`, `window.VixChart` namespaces. `fetchVIX()` now reads `window.__VIX_DATA__` synchronously (no network call) as the primary source, falling back to the existing allorigins.win proxy only if that global is unavailable.
+- `index.html`, `strategy.html` — Script tags updated to plain `<script src>` (no `type="module"`), in dependency order: `data/vix.js` → `assets/js/vix.js` → `assets/js/strategy.js` → (`assets/js/chart.js`, strategy.html only) → inline boot script.
+- **`file://` now fully supported** — this was the actual point of the module→classic-script conversion: browsers block `type="module"` scripts entirely under `file://`, which previously broke the site completely when `index.html` was opened by double-click instead of through a server. No local HTTP server is required anymore.
+- `docs/TRD.md`, `docs/SECURITY.md`, `docs/RUNBOOK.md`, `docs/ROADMAP.md`, `docs/PRD.md`, `docs/TENETS.md`, `docs/PRFAQ.md`, `README.MD` — updated to document the new data pipeline, classic-script architecture, `file://` support, and monitoring steps.
 
 ### Known Debt
 - The allorigins.win proxy fallback in `vix.js` remains in place until the new data-file pipeline is verified stable in production, then will be removed.

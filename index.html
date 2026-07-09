@@ -27,9 +27,9 @@
       <span class="nav-title">VIX Strategy</span>
     </a>
     <div class="nav-links">
-      <a href="https://azqato.com/invests" class="nav-link" target="_blank" rel="noopener noreferrer">Azqato Invests</a>
       <a href="index.html" class="nav-link nav-active" aria-current="page">About</a>
       <a href="strategy.html" class="nav-link">Dashboard</a>
+      <a href="https://azqato.com/invests" class="nav-link" target="_blank" rel="noopener noreferrer">Azqato Invests</a>
       <a href="https://azqato.github.io/support.html" class="nav-link" target="_blank" rel="noopener noreferrer">Support</a>
     </div>
   </nav>
@@ -341,9 +341,12 @@
   </div>
 </footer>
 
-<script type="module">
-  import { getCachedVIX, fetchVIX } from './assets/js/vix.js';
-  import { getTier }                from './assets/js/strategy.js';
+<script src="data/vix.js"></script>
+<script src="assets/js/vix.js"></script>
+<script src="assets/js/strategy.js"></script>
+<script>
+  const { getCachedVIX, fetchVIX } = window.VixData;
+  const { getTier }                = window.VixStrategy;
 
   const SHORT_LABELS = {
     tier1: 'Tier 1 — Low Fear',

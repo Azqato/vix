@@ -26,9 +26,9 @@
       <span class="nav-title">VIX Strategy</span>
     </a>
     <div class="nav-links">
-      <a href="https://azqato.com/invests" class="nav-link" target="_blank" rel="noopener noreferrer">Azqato Invests</a>
       <a href="index.html" class="nav-link">About</a>
       <a href="strategy.html" class="nav-link nav-active" aria-current="page">Dashboard</a>
+      <a href="https://azqato.com/invests" class="nav-link" target="_blank" rel="noopener noreferrer">Azqato Invests</a>
       <a href="https://azqato.github.io/support.html" class="nav-link" target="_blank" rel="noopener noreferrer">Support</a>
     </div>
   </nav>
@@ -279,13 +279,17 @@
   </div>
 </footer>
 
-<!-- Chart.js UMD — loads synchronously, sets window.Chart before module runs -->
+<!-- Chart.js UMD — loads synchronously, sets window.Chart before the scripts below run -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-<script type="module">
-  import { getCachedVIX, fetchVIX }                 from './assets/js/vix.js';
-  import { getTier, getAllocation, getTierLabel, TICKERS, ALL_TIERS } from './assets/js/strategy.js';
-  import { initChart, updateChart }                 from './assets/js/chart.js';
+<script src="data/vix.js"></script>
+<script src="assets/js/vix.js"></script>
+<script src="assets/js/strategy.js"></script>
+<script src="assets/js/chart.js"></script>
+<script>
+  const { getCachedVIX, fetchVIX }                 = window.VixData;
+  const { getTier, getAllocation, getTierLabel, TICKERS, ALL_TIERS } = window.VixStrategy;
+  const { initChart, updateChart }                 = window.VixChart;
 
   let chartInstance = null;
   let loadingTimer  = null;
@@ -467,9 +471,9 @@
     updateChart(chartInstance, allocation, cached.value);
   }
 
-  // Boot — type="module" scripts are deferred and run after DOM is parsed,
-  // so DOMContentLoaded has already fired by the time imports resolve.
-  // Run directly instead of waiting for an event that will never come.
+  // Boot — this script tag sits at the end of the body, after all content
+  // and dependency scripts, so the DOM is already parsed. Run directly
+  // instead of waiting for an event that will never come.
   (async () => {
     paintCached();          // instant — zero network wait
     await refresh();        // fetch fresh, then update

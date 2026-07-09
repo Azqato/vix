@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Fetch VIX from Yahoo Finance
         id: fetch
@@ -47,18 +47,18 @@ jobs:
           exit 1
         continue-on-error: true
 
-      - name: Write data/vix.json
+      - name: Write data/vix.js
         if: steps.fetch.outcome == 'success'
         run: |
           TIMESTAMP=$(date -u -d "@${{ steps.fetch.outputs.epoch }}" +"%Y-%m-%dT%H:%M:%S.000Z")
           FETCHED_AT=$(date -u +%s%3N)
           mkdir -p data
-          cat > data/vix.json <<EOF
-          {
+          cat > data/vix.js <<EOF
+          window.__VIX_DATA__ = {
             "value": ${{ steps.fetch.outputs.value }},
             "timestamp": "$TIMESTAMP",
             "fetchedAt": $FETCHED_AT
-          }
+          };
           EOF
 
       - name: Commit and push if changed
@@ -66,10 +66,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- data/vix.json; then
+          if git diff --quiet -- data/vix.js; then
             echo "No change in VIX value; skipping commit."
             exit 0
           fi
-          git add data/vix.json
+          git add data/vix.js
           git commit -m "chore: update VIX data [skip ci]"
           git push

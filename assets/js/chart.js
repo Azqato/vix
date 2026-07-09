@@ -1,5 +1,3 @@
-import { TICKERS } from './strategy.js';
-
 // Custom plugin: renders VIX value in the doughnut center hole.
 const centerTextPlugin = {
   id: 'centerText',
@@ -32,9 +30,10 @@ const centerTextPlugin = {
   },
 };
 
-export function initChart(canvasId) {
+function initChart(canvasId) {
   // Chart is the global exposed by the UMD script tag.
   const ChartJS = window.Chart;
+  const TICKERS = window.VixStrategy.TICKERS;
 
   const colors = [
     TICKERS.BIL.color,
@@ -89,7 +88,7 @@ export function initChart(canvasId) {
   });
 }
 
-export function updateChart(chartInstance, allocation, vixValue) {
+function updateChart(chartInstance, allocation, vixValue) {
   chartInstance.data.datasets[0].data = [
     allocation.BIL,
     allocation.SPY,
@@ -101,3 +100,5 @@ export function updateChart(chartInstance, allocation, vixValue) {
   };
   chartInstance.update();
 }
+
+window.VixChart = { initChart, updateChart };

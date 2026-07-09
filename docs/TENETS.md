@@ -17,11 +17,11 @@ A blank screen while waiting for the network costs user trust. The last-known VI
 
 ## 3. Zero Trust in the Data Pipeline
 
-The VIX data source (Yahoo Finance via a public CORS proxy) has no SLA and is not under our control. Every code path that depends on live data must handle failure gracefully: fall back to cached value first, then to an explicit error state. The user must always see the most useful available information — never a silent failure, never a broken layout.
+The VIX data source (Yahoo Finance, fetched server-side by a scheduled GitHub Actions workflow, with a direct browser + CORS-proxy fallback) has no SLA and is not under our control. Every code path that depends on live data must handle failure gracefully: fall back to cached value first, then to an explicit error state. The user must always see the most useful available information — never a silent failure, never a broken layout.
 
 ## 4. No Backend, No Exceptions
 
-Adding a server introduces cost, maintenance burden, security surface, and operational risk. Every feature must be implementable in a browser with zero server-side execution. If a proposed feature cannot work without a server, it belongs in a post-v2.0 scope or must be redesigned around browser-only primitives.
+Adding a persistent server introduces cost, maintenance burden, security surface, and operational risk. Every feature must be implementable in a browser with zero server-side execution *at request time*. The one exception, introduced in v1.1.0, is a scheduled GitHub Actions workflow that runs independently of any user request and only writes a static file (`data/vix.js`) back to the repo — it never serves a live request, has no API, and holds no state beyond that one file. This is deliberately distinct from a "backend": there is nothing running that a user request ever reaches. If a proposed feature requires code that responds to a live user request, it belongs in a post-v2.0 scope or must be redesigned around browser-only primitives.
 
 ## 5. The Disclaimer Is Non-Negotiable
 

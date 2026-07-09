@@ -1,9 +1,10 @@
-// Primary source: data/vix.json, refreshed on a schedule by
-// .github/workflows/update-vix.yml (server-side fetch, no CORS proxy needed).
-// Same-origin on GitHub Pages, so this needs no proxy.
-const DATA_FILE_URL = 'data/vix.json';
+// Primary source: window.__VIX_DATA__, set synchronously by data/vix.js
+// (<script src="data/vix.js"> loaded before this file), refreshed on a
+// schedule by .github/workflows/update-vix.yml. This is a plain global
+// read, not a fetch — works identically under file://, a local server,
+// or GitHub Pages, since it doesn't touch the network or CORS at all.
 
-// Fallback only, used if the data file fetch fails.
+// Fallback only, used if window.__VIX_DATA__ is unavailable.
 // corsproxy.io is blocked by Yahoo Finance (returns 403).
 // allorigins.win relays the request from their server and includes CORS headers.
 const URLS = [
@@ -34,19 +35,15 @@ async function fetchFromURL(url) {
   return parseResponse(await res.json());
 }
 
-async function fetchFromDataFile() {
-  const res = await fetch(DATA_FILE_URL, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  if (typeof data.value !== 'number' || !data.timestamp) {
-    throw new Error('Unexpected data/vix.json shape');
-  }
+function getDataFileVIX() {
+  const data = window.__VIX_DATA__;
+  if (!data || typeof data.value !== 'number' || !data.timestamp) return null;
   return { value: data.value, timestamp: new Date(data.timestamp) };
 }
 
 // Synchronous read of whatever is in localStorage right now.
 // Returns null if nothing is stored yet.
-export function getCachedVIX() {
+function getCachedVIX() {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
@@ -80,18 +77,15 @@ function saveToCache(value, timestamp) {
 // Async fetch. Always returns an object with shape:
 //   { value, timestamp, fromCache, stale }   — on success (live or cached)
 //   { value: null, timestamp: null, error: true } — total failure, no cache
-export async function fetchVIX() {
+async function fetchVIX() {
   // Return fresh cache without hitting the network
   const cached = getCachedVIX();
   if (cached && !cached.stale) {
     return cached;
   }
 
-  // Try the scheduled data file first (same-origin, no proxy needed).
-  let result = null;
-  try {
-    result = await fetchFromDataFile();
-  } catch (_) {}
+  // Try the committed data file first (synchronous global, no network).
+  let result = getDataFileVIX();
 
   // Fall back to the live proxy fetch if the data file is unavailable.
   if (!result) {
@@ -115,3 +109,5 @@ export async function fetchVIX() {
 
   return { value: null, timestamp: null, error: true };
 }
+
+window.VixData = { getCachedVIX, fetchVIX };

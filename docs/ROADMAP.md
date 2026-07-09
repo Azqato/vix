@@ -42,12 +42,16 @@ The MVP (v1.0.x) is complete and deployed. VIX data now refreshes on a schedule 
 
 ## Feature Breakdown Per Milestone
 
-### v1.1.0 — Server-Side VIX Data Pipeline (GitHub Actions) — Complete
-- New scheduled GitHub Actions workflow (`update-vix.yml`) fetches VIX directly from Yahoo Finance's `v8/finance/chart/^VIX` endpoint server-side (no CORS proxy needed off-browser) and commits the result to `data/vix.json` in the repo
+### v1.1.0 — Server-Side VIX Data Pipeline + `file://` Support — Complete
+- New scheduled GitHub Actions workflow (`update-vix.yml`) fetches VIX directly from Yahoo Finance's `v8/finance/chart/^VIX` endpoint server-side (no CORS proxy needed off-browser) and commits the result to `data/vix.js` in the repo, as a `window.__VIX_DATA__ = {...}` assignment (not JSON)
 - Runs on 8 fixed cron schedules per weekday, 9:45am–4:45pm ET, hourly. Fixed to EST (UTC-5) year-round rather than DST-aware — during EDT (roughly March–November) every run lands one hour later in ET (e.g. the close-of-day run fires at 5:45pm ET instead of 4:45pm). Accepted tradeoff to keep the schedule simple and low-frequency (8 runs/weekday, no polling)
-- `vix.js` updated: `fetchVIX()` now tries `data/vix.json` (same-origin, no CORS) first, falling back to the existing allorigins.win proxy only if that fails
-- Partially resolves the CORS proxy item in TRD.md's Known Technical Debt — the proxy fallback remains in `vix.js` until the new pipeline is verified stable in production, then will be removed
+- `vix.js`, `strategy.js`, and `chart.js` converted from ES modules (`type="module"`, `import`/`export`) to classic `<script src>` tags with `window.*` namespaces (`window.VixData`, `window.VixStrategy`, `window.VixChart`). This was necessary, not just a nicety: browsers block `type="module"` scripts entirely under `file://`, so the site previously failed completely when opened by double-clicking `index.html` instead of via a server
+- `data/vix.js` is loaded via a plain `<script src>` tag rather than `fetch()`, since fetching a local file is separately blocked under `file://` even for classic scripts — `vix.js`'s `fetchVIX()` now reads the resulting `window.__VIX_DATA__` global synchronously, no network call involved, working identically under `file://`, a local server, or GitHub Pages
+- Net result: `index.html`/`strategy.html` can now be opened directly via `file://` with no local server required, and still show real (if not up-to-the-second) VIX data
+- Falls back to the existing allorigins.win proxy fetch only if `window.__VIX_DATA__` is unavailable
+- Resolves both the CORS-proxy-dependency and `file://`-support items in TRD.md's Known Technical Debt; the proxy fallback remains in `vix.js` as a safety net
 - Requires `permissions: contents: write` on the workflow; failed fetches skip the commit and let the next scheduled run retry
+- `actions/checkout` bumped from `v4` to `v7` to target Node 24 natively (v4 targets Node 20, which GitHub now forces onto Node 24 with a deprecation warning)
 
 ### v1.2.0 — Custom Strategy Builder ("Custom" tab)
 - New "Custom" page/tab in the navigation, positioned as its own top-level entry alongside About / Dashboard

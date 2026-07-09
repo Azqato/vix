@@ -26,10 +26,10 @@ VIX Strategy is completely free, requires no login, collects no user data, and r
 ## Internal FAQ
 
 **1. Why build this as a fully static site with no backend?**
-Zero operational cost, zero server maintenance, and zero data collection liability. GitHub Pages is free and globally distributed. The only external dependency is a public CORS relay for the VIX data fetch. Adding a backend would introduce billing, uptime obligations, and security surface with no benefit.
+Zero operational cost, zero server maintenance, and zero data collection liability. GitHub Pages is free and globally distributed. VIX data is refreshed by a scheduled GitHub Actions workflow that commits a static file — it never serves a live request. The only remaining external dependency is a public CORS relay, used only as a fallback. Adding a real backend would introduce billing, uptime obligations, and security surface with no benefit.
 
-**2. What happens if the allorigins.win CORS proxy goes down?**
-The app degrades gracefully to the last cached VIX value, displayed with a STALE badge. If no cache exists, it shows an ERROR badge with a `--` placeholder. The page never crashes. The user can click Refresh to retry when the proxy recovers.
+**2. What happens if the committed VIX data and the allorigins.win CORS proxy both fail?**
+The app degrades gracefully to the last cached VIX value, displayed with a STALE badge. If no cache exists, it shows an ERROR badge with a `--` placeholder. The page never crashes. The user can click Refresh to retry.
 
 **3. Why TQQQ? Isn't 3x leverage extremely risky?**
 Yes, deliberately. The strategy targets aggressive long-term investors who understand volatility decay. TQQQ's allocation is capped at 25% (at extreme VIX) and starts at just 5% (at low VIX). The risk disclosure on both pages is explicit about 70–95% drawdown potential. The tool assumes a 10+ year time horizon.
@@ -50,10 +50,10 @@ Yes. The code is open source on GitHub, intentionally simple — three JS files,
 A portfolio tracker where users enter their current holdings and the app computes the delta — "sell X of BIL, buy Y of TQQQ." This requires persistent user state, which means either a backend or a complex localStorage-only UX. It is the most-requested future feature but the most architecturally complex.
 
 **9. How is the VIX data sourced?**
-Yahoo Finance's internal JSON API at `query1.finance.yahoo.com/v8/finance/chart/^VIX`, proxied through allorigins.win to bypass the browser CORS block. No API key is required. The same endpoint powers most retail VIX charts.
+Yahoo Finance's internal JSON API at `query1.finance.yahoo.com/v8/finance/chart/^VIX`. A scheduled GitHub Actions workflow fetches it directly (no proxy needed outside a browser) and commits the value to the repo, refreshed 8 times per weekday during market hours. If that committed value is ever unavailable, the browser falls back to fetching the same endpoint directly, proxied through allorigins.win to bypass the browser CORS block. No API key is required either way. The same endpoint powers most retail VIX charts.
 
 **10. Why not use a paid, reliable data API?**
-Most financial data APIs with SLAs require API keys, user accounts, and billing — all of which violate the no-backend, no-data-collection design constraints. The CORS proxy approach is the only viable option for a free, fully static deployment.
+Most financial data APIs with SLAs require API keys, user accounts, and billing — all of which violate the no-backend, no-data-collection design constraints. The free, unauthenticated Yahoo Finance endpoint, fetched server-side on a schedule, is the best fit for a free, fully static deployment.
 
 ---
 

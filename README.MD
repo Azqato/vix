@@ -12,17 +12,17 @@ A rules-based, browser-only ETF allocation dashboard that maps the live CBOE VIX
 |-------|-----------|---------|
 | Markup | HTML5 | — |
 | Styling | CSS3 with custom properties | — |
-| Logic | Vanilla JavaScript, ES Modules | ES2020+ |
+| Logic | Vanilla JavaScript, classic scripts (`window.*` namespaces) | ES2020+ |
 | Charts | Chart.js (CDN UMD) | 4.4.0 |
-| Data | Yahoo Finance JSON API via allorigins.win CORS proxy | v8 |
+| Data | `data/vix.js` (scheduled GitHub Actions fetch, same-origin `<script src>`), with a Yahoo Finance JSON API + allorigins.win CORS proxy fallback | v8 |
 | Hosting | GitHub Pages | — |
+| Scheduled data refresh | GitHub Actions (`.github/workflows/update-vix.yml`) | 8 fixed weekday runs |
 
 ---
 
 ## Prerequisites
 
-- A local HTTP server — ES modules are blocked on the `file://` protocol in all modern browsers.
-- No Node.js, no package manager, no build step required.
+- No local HTTP server, Node.js, package manager, or build step required. `index.html`/`strategy.html` can be opened directly via `file://`.
 
 ---
 
@@ -39,13 +39,17 @@ No dependencies to install.
 
 ## Running Locally
 
+Just open `index.html` directly in a browser — double-click it, or drag it into a browser window. No server needed.
+
+If you'd rather run a local server (optional, behaves identically):
+
 | Method | Command | Default URL |
 |--------|---------|-------------|
 | VS Code Live Server | Right-click `index.html` → Open with Live Server | `http://127.0.0.1:5500` |
 | Python 3 | `python -m http.server 8080` | `http://localhost:8080` |
 | Node http-server | `npx http-server -p 8080` | `http://localhost:8080` |
 
-Once running, the VIX fetch will work and the result is saved to `localStorage`. Subsequent visits show the last-known value instantly while a fresh fetch runs in the background.
+The VIX value loads from `data/vix.js` (committed to the repo, refreshed on a schedule) and is saved to `localStorage`. Subsequent visits show the last-known value instantly; a live proxy fetch only runs as a fallback if `data/vix.js` is unavailable.
 
 ---
 

@@ -29,7 +29,7 @@ const TIER_LABELS = {
   tier5: 'VIX > 45 — Extreme Fear (Crisis)',
 };
 
-export function getTier(vix) {
+function getTier(vix) {
   if (vix < 15) return 'tier1';
   if (vix < 25) return 'tier2';
   if (vix < 35) return 'tier3';
@@ -37,15 +37,15 @@ export function getTier(vix) {
   return 'tier5';
 }
 
-export function getAllocation(tier) {
+function getAllocation(tier) {
   return NORMALIZED[tier];
 }
 
-export function getTierLabel(tier) {
+function getTierLabel(tier) {
   return TIER_LABELS[tier] ?? 'Unknown Tier';
 }
 
-export const TICKERS = {
+const TICKERS = {
   BIL: {
     symbol: 'BIL',
     name: 'SPDR Bloomberg 1–3 Month T-Bill ETF',
@@ -72,9 +72,11 @@ export const TICKERS = {
   },
 };
 
-export const ALL_TIERS = Object.entries(RAW).map(([key, raw]) => ({
+const ALL_TIERS = Object.entries(RAW).map(([key, raw]) => ({
   key,
   label: TIER_LABELS[key],
   raw,
   normalized: normalize(raw),
 }));
+
+window.VixStrategy = { getTier, getAllocation, getTierLabel, TICKERS, ALL_TIERS };
