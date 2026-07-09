@@ -24,8 +24,8 @@ Complete steps to run the project from a fresh machine.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Azqato/VIX.git
-cd VIX
+git clone https://github.com/Azqato/vix.git
+cd vix
 
 # 2. Start a local HTTP server (pick one)
 python -m http.server 8080
@@ -67,7 +67,7 @@ There is no build step. The repository is the deployable artifact. No compilatio
 
 3. GitHub Pages deploys automatically within 1–3 minutes.
 
-4. Verify the deployment at: `https://azqato.github.io/VIX/`
+4. Verify the deployment at: `https://azqato.github.io/vix/`
 
 5. Check the **Actions** tab on GitHub for deployment status if the site doesn't update.
 
@@ -115,7 +115,7 @@ GitHub Pages redeploys automatically after the push. The rollback is live within
 
 | Environment | URL | Branch | Deploy method |
 |-------------|-----|--------|---------------|
-| Production | `https://azqato.github.io/VIX/` | `main` | Automatic on every push to `main` |
+| Production | `https://azqato.github.io/vix/` | `main` | Automatic on every push to `main` |
 | Local dev | `http://localhost:8080` (or Live Server port) | Any branch | Manual HTTP server start |
 
 There is no staging environment. Test all changes locally before pushing to `main`, since `main` is always the live site.
@@ -144,7 +144,7 @@ VIX Strategy has no server-side monitoring because it has no server. All monitor
 
 | Check | How | When |
 |-------|-----|------|
-| Live VIX fetch works | Open `https://azqato.github.io/VIX/strategy.html`; verify status badge shows `LIVE` | Per release; after any change to `vix.js` |
+| Live VIX fetch works | Open `https://azqato.github.io/vix/strategy.html`; verify status badge shows `LIVE` | Per release; after any change to `vix.js` |
 | No console errors | Open browser DevTools → Console on both pages | Per release |
 | Both pages render correctly on mobile | Test at 375px viewport width | Per release |
 | GitHub Pages deployment succeeded | Check **Actions** tab on GitHub | After every push to `main` |

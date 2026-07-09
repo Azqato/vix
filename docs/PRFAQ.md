@@ -19,7 +19,7 @@ The strategy operates on a simple premise: the VIX is a mean-reverting fear gaug
 
 "I kept watching VIX spike and knowing I should be doing something, but I never had a clear answer for exactly what," said one early user. "This gives me the specific percentages every single time."
 
-VIX Strategy is completely free, requires no login, collects no user data, and runs entirely in the browser. It is hosted on GitHub Pages and available at [https://azqato.github.io/VIX/](https://azqato.github.io/VIX/).
+VIX Strategy is completely free, requires no login, collects no user data, and runs entirely in the browser. It is hosted on GitHub Pages and available at [https://azqato.github.io/vix/](https://azqato.github.io/vix/).
 
 ---
 

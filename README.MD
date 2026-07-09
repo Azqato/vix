@@ -2,7 +2,7 @@
 
 A rules-based, browser-only ETF allocation dashboard that maps the live CBOE VIX reading to a specific portfolio allocation across four ETFs.
 
-**Live site:** https://azqato.github.io/VIX/
+**Live site:** https://azqato.github.io/vix/
 
 ---
 
@@ -29,8 +29,8 @@ A rules-based, browser-only ETF allocation dashboard that maps the live CBOE VIX
 ## Installation
 
 ```bash
-git clone https://github.com/Azqato/VIX.git
-cd VIX
+git clone https://github.com/Azqato/vix.git
+cd vix
 ```
 
 No dependencies to install.
@@ -68,7 +68,7 @@ No build step. The repository is the deployable artifact.
    git push origin main
    ```
 2. GitHub Pages deploys automatically within 1–3 minutes.
-3. Verify at: `https://azqato.github.io/VIX/`
+3. Verify at: `https://azqato.github.io/vix/`
 
 **First-time setup:** Go to **Settings → Pages**, set source to `Deploy from a branch`, branch `main`, folder `/ (root)`.
 
