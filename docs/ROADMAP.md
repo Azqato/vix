@@ -9,7 +9,7 @@
 ## Current Phase
 
 **Phase 2 — Server-Side Data + Custom Strategies (v1.1.x–v1.2.x)**
-The MVP (v1.0.x) is complete and deployed. VIX data refreshes on a schedule via GitHub Actions in addition to the live browser fetch. The "Custom" strategy builder (v1.2.0) has shipped with free-text ticker entry; live ticker verification against a real quote is deferred to v1.2.1. Next up: verification, then the existing v1.3.0+ feature backlog.
+The MVP (v1.0.x) is complete and deployed. VIX data refreshes on a schedule via GitHub Actions in addition to the live browser fetch. The "Custom" strategy builder (v1.2.0) has shipped with free-text ticker entry. The backlog has been reprioritized to favor data-visualization features (sparkline, percentile rank) ahead of strategy variants and ticker verification — see the Milestone Table below.
 
 ---
 
@@ -32,13 +32,13 @@ The MVP (v1.0.x) is complete and deployed. VIX data refreshes on a schedule via 
 | Server-side VIX data pipeline (GitHub Actions) | v1.1.0 | Complete | 2026-07-09 |
 | Fix inline-script global scope collision (SyntaxError breaking VIX display) | v1.1.1 | Complete | 2026-07-09 |
 | Custom strategy builder ("Custom" tab), free-text tickers | v1.2.0 | Complete | 2026-07-09 |
-| Live ticker verification against a real quote | v1.2.1 | Planned | TBD |
-| SMH/SOXL strategy toggle | v1.3.0 | Planned | TBD |
-| QQQ vs 200-day MA trend filter | v1.4.0 | Planned | TBD |
-| VIX percentile rank mode | v1.5.0 | Planned | TBD |
-| 12-month historical VIX sparkline | v1.6.0 | Planned | TBD |
-| Backtesting visualization | v1.7.0 | Planned | TBD |
-| Full portfolio tracker | v2.0.0 | Planned | TBD |
+| 12-month historical VIX sparkline | v1.2.1 | Planned | TBD |
+| VIX percentile rank mode | v2.0.0 | Planned | TBD |
+| QQQ vs 200-day MA trend filter | v2.1.0 | Planned | TBD |
+| SMH/SOXL strategy toggle | v2.2.0 | Planned | TBD |
+| Live ticker verification against a real quote | v2.3.0 | Planned | TBD |
+| Backtesting visualization | v3.0.0 | Planned | TBD |
+| Full portfolio tracker | v4.0.0 | Planned | TBD |
 
 ---
 
@@ -64,50 +64,50 @@ The MVP (v1.0.x) is complete and deployed. VIX data refreshes on a schedule via 
 ### v1.2.0 — Custom Strategy Builder ("Custom" tab) — Complete
 - New `custom.html` page, added to the nav on every page as **Custom**, between Dashboard and Azqato Invests
 - Four fixed risk categories, seeded from the core strategy: **Risk Off** (default BIL), **Diversify** (default SPY), **Risk On** (default QQQ), **Full Risk** (default TQQQ) — each with a free-text input for the user's own ticker
-- Input is free-text, not verified against a live quote — sanitized client-side (`assets/js/custom.js`: uppercased, restricted to `[A-Z0-9.-]`, max 10 chars) as basic hygiene only, not existence validation. The UI explicitly labels this ("tickers are not yet verified") so it isn't mistaken for real validation. Live verification is deferred to v1.2.1
+- Input is free-text, not verified against a live quote — sanitized client-side (`assets/js/custom.js`: uppercased, restricted to `[A-Z0-9.-]`, max 10 chars) as basic hygiene only, not existence validation. The UI explicitly labels this ("tickers are not yet verified") so it isn't mistaken for real validation. Live verification is deferred to v2.3
 - Recomputes the VIX-tier allocation table using the same tier boundaries and percentage weights as the core strategy (`getAllocation()` in `strategy.js`, unmodified) — only the displayed ticker per category changes, not the math
 - Selections persist in `localStorage['vix_custom_tickers']` only, consistent with the site's no-backend model
 - `chart.js`'s `initChart()`/`updateChart()` extended with an optional `labels` parameter so the doughnut chart can show custom ticker symbols instead of the hardcoded BIL/SPY/QQQ/TQQQ labels, without touching the core strategy.html usage (labels default to the original four when omitted)
 - All user-entered ticker text is rendered via `.textContent`/`.value`, never `innerHTML` — this is the first user-input surface in the app, so DOM-injection safety was treated as a hard requirement, not an afterthought (see `docs/SECURITY.md`)
 
-### v1.2.1 — Live Ticker Verification
+### v1.2.1 — Historical VIX Sparkline
+- Render a 12-month Chart.js line chart on strategy.html
+- Show the five tier boundary lines as horizontal reference lines
+- Mark the current VIX value with a distinct point
+- Data from Yahoo Finance historical daily endpoint via CORS proxy
+
+### v2.0.0 — VIX Percentile Rank
+- Fetch 252 days of VIX historical data from Yahoo Finance
+- Compute current VIX's percentile rank vs. trailing year
+- Display as supplemental badge adjacent to the current VIX value on strategy.html
+- Adds context for whether the current VIX is historically high or low
+
+### v2.1.0 — Trend Filter
+- Fetch QQQ 200-day moving average from Yahoo Finance historical endpoint
+- Optional toggle: if QQQ is below its 200-day MA, suppress TQQQ allocation (redistribute to QQQ)
+- Display QQQ MA relationship as a supplemental badge or indicator
+- Filter is opt-in; default behavior unchanged
+
+### v2.2.0 — SMH/SOXL Strategy Toggle
+- Add a second allocation table: QQQ / SMH (VanEck Semiconductor) / TQQQ / SOXL (Direxion Semiconductor 3x)
+- UI toggle between "Core Strategy" and "Growth Rocket" mode on strategy.html
+- Same VIX tier boundaries; different allocations per tier
+- No changes to existing tier logic, VIX fetch, or chart infrastructure
+
+### v2.3.0 — Live Ticker Verification
 - On blur (or explicit action), verify the entered ticker actually resolves to a quote — reuse the existing Yahoo Finance `v8/finance/chart/<TICKER>` endpoint via the allorigins.win proxy, the same pattern already used for VIX itself
 - Show inline state: `Verifying…` → ✓ valid (surface the resolved company/fund name) or ✗ invalid (`Ticker not found`)
 - Debounce input and cache verified tickers for the session to avoid redundant lookups
 - Degrade gracefully if allorigins.win is unavailable — don't hard-block saving, since the proxy has no SLA
 - Does not attempt to confirm the ticker is actually an ETF (vs. a single stock) or a sensible fit for its category — Yahoo's response doesn't cleanly distinguish instrument type; scope stays to "does this symbol exist and trade"
 
-### v1.3.0 — SMH/SOXL Strategy Toggle
-- Add a second allocation table: QQQ / SMH (VanEck Semiconductor) / TQQQ / SOXL (Direxion Semiconductor 3x)
-- UI toggle between "Core Strategy" and "Growth Rocket" mode on strategy.html
-- Same VIX tier boundaries; different allocations per tier
-- No changes to existing tier logic, VIX fetch, or chart infrastructure
-
-### v1.4.0 — Trend Filter
-- Fetch QQQ 200-day moving average from Yahoo Finance historical endpoint
-- Optional toggle: if QQQ is below its 200-day MA, suppress TQQQ allocation (redistribute to QQQ)
-- Display QQQ MA relationship as a supplemental badge or indicator
-- Filter is opt-in; default behavior unchanged
-
-### v1.5.0 — VIX Percentile Rank
-- Fetch 252 days of VIX historical data from Yahoo Finance
-- Compute current VIX's percentile rank vs. trailing year
-- Display as supplemental badge adjacent to the current VIX value on strategy.html
-- Adds context for whether the current VIX is historically high or low
-
-### v1.6.0 — Historical VIX Sparkline
-- Render a 12-month Chart.js line chart on strategy.html
-- Show the five tier boundary lines as horizontal reference lines
-- Mark the current VIX value with a distinct point
-- Data from Yahoo Finance historical daily endpoint via CORS proxy
-
-### v1.7.0 — Backtesting Visualization
+### v3.0.0 — Backtesting Visualization
 - Fetch multi-year daily VIX and ETF price history from Yahoo Finance
 - Simulate strategy portfolio value over time vs. SPY buy-and-hold
 - Render results as a Chart.js multi-line chart
 - Largest feature to date; requires significant data processing in the browser
 
-### v2.0.0 — Portfolio Tracker
+### v4.0.0 — Portfolio Tracker
 - User enters current holdings (ticker, shares or dollar value)
 - App computes target allocation in dollars and the delta from current state ("buy $X of TQQQ, sell $Y of BIL")
 - Requires persistent user data — browser-only localStorage approach preferred to avoid adding a backend

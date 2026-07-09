@@ -56,7 +56,7 @@ Yahoo Finance's internal JSON API at `query1.finance.yahoo.com/v8/finance/chart/
 Most financial data APIs with SLAs require API keys, user accounts, and billing — all of which violate the no-backend, no-data-collection design constraints. The free, unauthenticated Yahoo Finance endpoint, fetched server-side on a schedule, is the best fit for a free, fully static deployment.
 
 **11. Does the Custom strategy builder verify that entered tickers are real?**
-Not yet. As of v1.2.0, ticker input is free-text, sanitized to a plausible shape (uppercase, letters/digits/dot/dash, max 10 characters) but not checked against a live quote — the UI says so explicitly. Live verification against Yahoo Finance is planned for v1.2.1, using the same fetch pattern already proven for VIX itself.
+Not yet. As of v1.2.0, ticker input is free-text, sanitized to a plausible shape (uppercase, letters/digits/dot/dash, max 10 characters) but not checked against a live quote — the UI says so explicitly. Live verification against Yahoo Finance is planned for v2.3, using the same fetch pattern already proven for VIX itself.
 
 ---
 

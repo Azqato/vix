@@ -10,7 +10,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 - `custom.html` — New "Custom" strategy builder page. Lets a user substitute their own ticker into each of four fixed risk categories (Risk Off, Diversify, Risk On, Full Risk), while keeping the exact same VIX-tier percentage weights as the core strategy. Includes its own live VIX feed, tier banner, doughnut chart, and allocation table, mirroring `strategy.html`'s dashboard.
-- `assets/js/custom.js` — New library: category metadata (slot mapping, labels, colors, descriptions), `localStorage['vix_custom_tickers']` persistence, and `sanitizeTicker()` — uppercases and restricts free-text input to `[A-Z0-9.-]`, max 10 characters. This is basic input hygiene, **not** verification that the ticker exists; the UI says so explicitly. Live verification is deferred to v1.2.1.
+- `assets/js/custom.js` — New library: category metadata (slot mapping, labels, colors, descriptions), `localStorage['vix_custom_tickers']` persistence, and `sanitizeTicker()` — uppercases and restricts free-text input to `[A-Z0-9.-]`, max 10 characters. This is basic input hygiene, **not** verification that the ticker exists; the UI says so explicitly. Live verification is deferred to v2.3.
 - **"Custom" nav link** added to `index.html`, `strategy.html`, and `custom.html`, positioned between Dashboard and Azqato Invests.
 - `assets/css/styles.css` — New `.customize-*` classes for the ticker input form (grid layout, styled text inputs, save/reset actions, status message).
 

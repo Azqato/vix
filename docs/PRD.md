@@ -84,13 +84,13 @@ Arrives via GitHub, wants to understand how the strategy works technically, may 
 
 ### Future (Post-MVP)
 
-- Live ticker verification for the Custom builder — confirm entered tickers resolve to a real quote before treating them as valid (v1.2.1)
-- SMH / SOXL "Growth Rocket" strategy as a toggle (v1.3)
-- Trend filter — QQQ vs. 200-day MA overlay (v1.4)
-- VIX percentile rank mode (v1.5)
-- 12-month historical VIX sparkline (v1.6)
-- Backtesting visualization using Yahoo Finance historical data (v1.7)
-- Full portfolio tracker with user-entered holdings (v2.0)
+- 12-month historical VIX sparkline (v1.2.1)
+- VIX percentile rank mode (v2.0)
+- Trend filter — QQQ vs. 200-day MA overlay (v2.1)
+- SMH / SOXL "Growth Rocket" strategy as a toggle (v2.2)
+- Live ticker verification for the Custom builder — confirm entered tickers resolve to a real quote before treating them as valid (v2.3)
+- Backtesting visualization using Yahoo Finance historical data (v3.0)
+- Full portfolio tracker with user-entered holdings (v4.0)
 
 ---
 

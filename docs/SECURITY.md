@@ -79,7 +79,7 @@ Every outbound request made by the application:
 1. **Input sanitization** — `sanitizeTicker()` in `custom.js` uppercases the input and strips everything outside `[A-Z0-9.-]`, capped at 10 characters, before it's ever stored in `localStorage` or read back. This alone rules out `<`, `>`, `"`, `'`, and every other HTML-meaningful character.
 2. **Safe rendering** — even if the sanitizer were ever loosened or bypassed, every render path for that value uses `.textContent`/`.value`, not `innerHTML` (see above), so no string of characters could execute as markup.
 
-**Known limitation:** The ticker is not verified against a real quote (deferred to v1.2.1 — see `docs/ROADMAP.md`). A user can enter any string matching the sanitizer's charset, valid ticker or not; this is a data-quality gap, not a security one, since the rendering path is already injection-safe regardless of whether the ticker "means" anything.
+**Known limitation:** The ticker is not verified against a real quote (deferred to v2.3 — see `docs/ROADMAP.md`). A user can enter any string matching the sanitizer's charset, valid ticker or not; this is a data-quality gap, not a security one, since the rendering path is already injection-safe regardless of whether the ticker "means" anything.
 
 ### CDN Compromise (Chart.js)
 
