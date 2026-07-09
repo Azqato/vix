@@ -1,9 +1,9 @@
 # Product Requirements Document
 
 **Product:** VIX Strategy
-**Version:** 1.0.12
+**Version:** 1.1.1
 **Status:** Live — MVP shipped
-**Last Updated:** 2026-06-15
+**Last Updated:** 2026-07-09
 
 ---
 

@@ -6,6 +6,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.1] – 2026-07-09
+
+### Fixed
+- `index.html`, `strategy.html` — Inline boot `<script>` blocks were throwing a `SyntaxError` on every page load (`Identifier 'getTier' has already been declared`), silently killing the entire script before it ran. Cause: classic `<script>` tags share one global scope, so `vix.js`'s top-level `function getCachedVIX(){}` / `fetchVIX(){}` and `strategy.js`'s `getTier(){}` / `getAllocation(){}` / etc. became global bindings — and the inline scripts then re-declared those exact same names via `const { getCachedVIX, fetchVIX } = window.VixData` destructuring, which collides in the same scope. This broke the VIX display entirely (stuck on `--`, no loading counter, no tier badge) on GitHub Pages, `file://`, and local servers alike — introduced by the v1.1.0 classic-script conversion. Fixed by wrapping each inline script's content in an IIFE so its `const` declarations get their own scope and safely shadow the globals instead of redeclaring them.
+
+---
+
 ## [1.1.0] – 2026-07-09
 
 ### Added

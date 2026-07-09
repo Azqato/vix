@@ -1,7 +1,7 @@
 # Roadmap
 
 **Product:** VIX Strategy
-**Version:** 1.1.0
+**Version:** 1.1.1
 **Last Updated:** 2026-07-09
 
 ---
@@ -30,6 +30,7 @@ The MVP (v1.0.x) is complete and deployed. VIX data now refreshes on a schedule 
 | Navigation rebuild with active-page highlight | v1.0.10 | Complete | 2026-06-07 |
 | Full documentation audit | v1.0.11 | Complete | 2026-06-08 |
 | Server-side VIX data pipeline (GitHub Actions) | v1.1.0 | Complete | 2026-07-09 |
+| Fix inline-script global scope collision (SyntaxError breaking VIX display) | v1.1.1 | Complete | 2026-07-09 |
 | Custom strategy builder ("Custom" tab) | v1.2.0 | Planned | TBD |
 | SMH/SOXL strategy toggle | v1.3.0 | Planned | TBD |
 | QQQ vs 200-day MA trend filter | v1.4.0 | Planned | TBD |
@@ -52,6 +53,12 @@ The MVP (v1.0.x) is complete and deployed. VIX data now refreshes on a schedule 
 - Resolves both the CORS-proxy-dependency and `file://`-support items in TRD.md's Known Technical Debt; the proxy fallback remains in `vix.js` as a safety net
 - Requires `permissions: contents: write` on the workflow; failed fetches skip the commit and let the next scheduled run retry
 - `actions/checkout` bumped from `v4` to `v7` to target Node 24 natively (v4 targets Node 20, which GitHub now forces onto Node 24 with a deprecation warning)
+
+### v1.1.1 — Fix Inline-Script Global Scope Collision — Complete
+- The v1.1.0 classic-script conversion introduced a regression: `index.html`/`strategy.html`'s inline boot `<script>` blocks destructured `getCachedVIX`, `fetchVIX`, `getTier`, etc. as top-level `const` — but classic scripts share one global scope, and `vix.js`/`strategy.js` already declared top-level `function` bindings with those exact names. The redeclaration threw a `SyntaxError` on every page load, silently killing the entire inline script before any DOM update ran
+- Symptom: VIX value stuck on `--`, no loading counter, no tier badge — on GitHub Pages, `file://`, and local servers alike, including incognito (ruling out a caching explanation)
+- Fixed by wrapping each inline script's content in an IIFE (`(function () { ... })();`), giving its `const` declarations their own scope so they safely shadow the globals instead of colliding with them
+- See `docs/PATCHNOTES.md` [1.1.1] for full detail
 
 ### v1.2.0 — Custom Strategy Builder ("Custom" tab)
 - New "Custom" page/tab in the navigation, positioned as its own top-level entry alongside About / Dashboard
