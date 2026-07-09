@@ -1,0 +1,75 @@
+name: Update VIX Data
+
+on:
+  schedule:
+    # Fixed on EST (UTC-5) year-round — no DST logic. During EDT (roughly
+    # March-November) every run lands one hour later in ET than the label
+    # below implies (e.g. the 21:45 UTC run fires at 4:45pm ET in winter,
+    # 5:45pm ET in summer). Accepted tradeoff for a simple, low-frequency
+    # schedule — see docs/ROADMAP.md v1.1.0.
+    - cron: '45 14 * * 1-5'  # 9:45am ET (EST)
+    - cron: '45 15 * * 1-5'  # 10:45am ET (EST)
+    - cron: '45 16 * * 1-5'  # 11:45am ET (EST)
+    - cron: '45 17 * * 1-5'  # 12:45pm ET (EST)
+    - cron: '45 18 * * 1-5'  # 1:45pm ET (EST)
+    - cron: '45 19 * * 1-5'  # 2:45pm ET (EST)
+    - cron: '45 20 * * 1-5'  # 3:45pm ET (EST)
+    - cron: '45 21 * * 1-5'  # 4:45pm ET (EST)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update-vix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch VIX from Yahoo Finance
+        id: fetch
+        run: |
+          set -e
+          for URL in \
+            "https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX" \
+            "https://query2.finance.yahoo.com/v8/finance/chart/%5EVIX"; do
+            RESPONSE=$(curl -s -A "Mozilla/5.0" "$URL" || true)
+            VALUE=$(echo "$RESPONSE" | jq -r '.chart.result[0].meta.regularMarketPrice // empty')
+            EPOCH=$(echo "$RESPONSE" | jq -r '.chart.result[0].meta.regularMarketTime // empty')
+            if [ -n "$VALUE" ] && [ -n "$EPOCH" ]; then
+              echo "value=$VALUE" >> "$GITHUB_OUTPUT"
+              echo "epoch=$EPOCH" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "All Yahoo Finance endpoints failed; skipping this run." >&2
+          exit 1
+        continue-on-error: true
+
+      - name: Write data/vix.json
+        if: steps.fetch.outcome == 'success'
+        run: |
+          TIMESTAMP=$(date -u -d "@${{ steps.fetch.outputs.epoch }}" +"%Y-%m-%dT%H:%M:%S.000Z")
+          FETCHED_AT=$(date -u +%s%3N)
+          mkdir -p data
+          cat > data/vix.json <<EOF
+          {
+            "value": ${{ steps.fetch.outputs.value }},
+            "timestamp": "$TIMESTAMP",
+            "fetchedAt": $FETCHED_AT
+          }
+          EOF
+
+      - name: Commit and push if changed
+        if: steps.fetch.outcome == 'success'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- data/vix.json; then
+            echo "No change in VIX value; skipping commit."
+            exit 0
+          fi
+          git add data/vix.json
+          git commit -m "chore: update VIX data [skip ci]"
+          git push

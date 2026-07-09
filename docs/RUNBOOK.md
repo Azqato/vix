@@ -127,7 +127,8 @@ There is no staging environment. Test all changes locally before pushing to `mai
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
 | VIX shows `--`, no tier badge, no chart | Opened `index.html` via `file://` protocol | Start a local HTTP server (see Local Setup) |
-| VIX shows `STALE` badge | allorigins.win proxy unreachable, or Yahoo Finance changed their API | Click Refresh; check `https://api.allorigins.win/` directly; check if response shape changed |
+| VIX shows `STALE` badge | `data/vix.json` fetch failed and allorigins.win proxy also unreachable, or Yahoo Finance changed their API | Click Refresh; check `https://azqato.github.io/vix/data/vix.json` and `https://api.allorigins.win/` directly; check the **Actions** tab for `update-vix.yml` failures |
+| `data/vix.json` not updating during market hours | `update-vix.yml` run failed (Yahoo endpoint changed/unreachable) or repo went 60+ days without a commit (GitHub auto-disables scheduled workflows) | Check the **Actions** tab; re-run manually via `workflow_dispatch` if needed; push any commit to re-enable a disabled schedule |
 | VIX shows `ERROR` badge and `--` | Live fetch failed and no prior cached value | Check network; click Refresh after a moment |
 | Chart canvas is blank, but VIX value and tables show | Chart.js CDN (jsDelivr) failed to load | Check `https://status.jsdelivr.com`; verify the CDN URL in `strategy.html` is accessible |
 | Navigation active highlight is on the wrong page | `nav-active` class applied to wrong `<a>` tag in HTML | Check `index.html` has `nav-active` on the About link; `strategy.html` has it on the Dashboard link |
@@ -145,6 +146,8 @@ VIX Strategy has no server-side monitoring because it has no server. All monitor
 | Check | How | When |
 |-------|-----|------|
 | Live VIX fetch works | Open `https://azqato.github.io/vix/strategy.html`; verify status badge shows `LIVE` | Per release; after any change to `vix.js` |
+| `update-vix.yml` scheduled runs are succeeding | Check the **Actions** tab, filter by `Update VIX Data` | Weekly, or if `data/vix.json` looks stale |
+| `data/vix.json` is up to date | Open `https://azqato.github.io/vix/data/vix.json`; compare `fetchedAt` to the current time during market hours | If VIX display looks stale |
 | No console errors | Open browser DevTools → Console on both pages | Per release |
 | Both pages render correctly on mobile | Test at 375px viewport width | Per release |
 | GitHub Pages deployment succeeded | Check **Actions** tab on GitHub | After every push to `main` |

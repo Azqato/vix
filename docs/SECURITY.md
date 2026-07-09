@@ -23,6 +23,7 @@ None. There are no user roles and no access-controlled resources. The applicatio
 | Data | Storage location | Contents | Accessible by | Protection mechanism |
 |------|-----------------|----------|---------------|---------------------|
 | VIX cache | `localStorage` (browser-side) | Last VIX value (float), ISO timestamp, fetchedAt Unix ms | JavaScript running on the same origin only | Browser same-origin policy |
+| VIX data file | `data/vix.json` (repo, served by GitHub Pages) | Last VIX value (float), ISO timestamp, fetchedAt Unix ms | Publicly readable, writable only by the `update-vix.yml` GitHub Actions workflow via `GITHUB_TOKEN` | Committed to `main` by a scheduled workflow only; no user input path can write to it |
 
 **No user data of any kind is collected, stored server-side, or transmitted.** localStorage holds only the last-known VIX number and the timestamp of when it was fetched. It contains zero personally identifiable information (PII).
 
@@ -42,8 +43,9 @@ Every outbound request made by the application:
 
 | Service | URL | Data transmitted | Purpose |
 |---------|-----|-----------------|---------|
-| allorigins.win | `https://api.allorigins.win/raw?url=...` | Target URL + browser IP (implicit) | Relay VIX data request around CORS block |
-| Yahoo Finance | `https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX` | Browser IP and user-agent (via relay) | Source of VIX market data |
+| `data/vix.json` (same origin) | `/data/vix.json` on `azqato.github.io` | None — same-origin GET | Primary VIX data source, refreshed on a schedule server-side |
+| allorigins.win | `https://api.allorigins.win/raw?url=...` | Target URL + browser IP (implicit) | Fallback only, used if the data file fetch fails |
+| Yahoo Finance | `https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX` | Browser IP and user-agent (via relay); no browser IP when fetched server-side by the GitHub Actions workflow | Source of VIX market data, fetched directly (no proxy) by `update-vix.yml`, and as a browser fallback via allorigins.win |
 | jsDelivr CDN | `https://cdn.jsdelivr.net/npm/chart.js@4.4.0/...` | Browser IP and user-agent | Serve Chart.js library |
 
 **No user's personal data, financial data, portfolio information, or identifying information is transmitted to any party.** The only data leaving the browser is the standard HTTP metadata inherent in any web request (IP address, user-agent).

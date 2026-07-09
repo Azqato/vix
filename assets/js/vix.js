@@ -1,3 +1,9 @@
+// Primary source: data/vix.json, refreshed on a schedule by
+// .github/workflows/update-vix.yml (server-side fetch, no CORS proxy needed).
+// Same-origin on GitHub Pages, so this needs no proxy.
+const DATA_FILE_URL = 'data/vix.json';
+
+// Fallback only, used if the data file fetch fails.
 // corsproxy.io is blocked by Yahoo Finance (returns 403).
 // allorigins.win relays the request from their server and includes CORS headers.
 const URLS = [
@@ -26,6 +32,16 @@ async function fetchFromURL(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return parseResponse(await res.json());
+}
+
+async function fetchFromDataFile() {
+  const res = await fetch(DATA_FILE_URL, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (typeof data.value !== 'number' || !data.timestamp) {
+    throw new Error('Unexpected data/vix.json shape');
+  }
+  return { value: data.value, timestamp: new Date(data.timestamp) };
 }
 
 // Synchronous read of whatever is in localStorage right now.
@@ -71,13 +87,20 @@ export async function fetchVIX() {
     return cached;
   }
 
-  // Try each proxy URL until one succeeds
+  // Try the scheduled data file first (same-origin, no proxy needed).
   let result = null;
-  for (const url of URLS) {
-    try {
-      result = await fetchFromURL(url);
-      break;
-    } catch (_) {}
+  try {
+    result = await fetchFromDataFile();
+  } catch (_) {}
+
+  // Fall back to the live proxy fetch if the data file is unavailable.
+  if (!result) {
+    for (const url of URLS) {
+      try {
+        result = await fetchFromURL(url);
+        break;
+      } catch (_) {}
+    }
   }
 
   if (result) {

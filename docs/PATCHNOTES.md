@@ -6,6 +6,21 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.0] – 2026-07-09
+
+### Added
+- `.github/workflows/update-vix.yml` — Scheduled GitHub Actions workflow that fetches VIX directly from Yahoo Finance server-side (no CORS proxy needed) and commits the result to `data/vix.json`. Runs on 8 fixed cron schedules per weekday (9:45am–4:45pm ET, fixed to EST/UTC-5 year-round — drifts one hour later during EDT, an accepted tradeoff for a simple fixed schedule with no polling). Also supports manual `workflow_dispatch` runs.
+- `data/vix.json` — New repo-committed data file: `{ value, timestamp, fetchedAt }`, refreshed by the workflow above.
+- `assets/js/vix.js` — `fetchFromDataFile()` added; `fetchVIX()` now tries `data/vix.json` (same-origin, no proxy) first, falling back to the existing allorigins.win proxy path only if the data file fetch fails.
+
+### Changed
+- `docs/TRD.md`, `docs/SECURITY.md`, `docs/RUNBOOK.md`, `docs/ROADMAP.md` — updated to document the new server-side data pipeline, its third-party trust footprint, and monitoring steps.
+
+### Known Debt
+- The allorigins.win proxy fallback in `vix.js` remains in place until the new data-file pipeline is verified stable in production, then will be removed.
+
+---
+
 ## [1.0.12] – 2026-06-15
 
 ### Added

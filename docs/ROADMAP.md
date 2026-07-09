@@ -1,15 +1,15 @@
 # Roadmap
 
 **Product:** VIX Strategy
-**Version:** 1.0.11
-**Last Updated:** 2026-06-08
+**Version:** 1.1.0
+**Last Updated:** 2026-07-09
 
 ---
 
 ## Current Phase
 
-**Phase 1 — MVP Live (v1.0.x)**
-The core product is complete and deployed. Both pages are functional. VIX data fetches live from Yahoo Finance. Navigation, documentation, footer credit, and responsive layout are all in place. All v1.0.x work is incremental polish and documentation, not new features.
+**Phase 2 — Server-Side Data + Custom Strategies (v1.1.x)**
+The MVP (v1.0.x) is complete and deployed. VIX data now refreshes on a schedule via GitHub Actions in addition to the live browser fetch. Next up: a user-configurable "Custom" strategy tab, plus the existing v1.2.0+ feature backlog.
 
 ---
 
@@ -29,42 +29,60 @@ The core product is complete and deployed. Both pages are functional. VIX data f
 | Footer credit + Support nav link | v1.0.9 | Complete | 2026-06-07 |
 | Navigation rebuild with active-page highlight | v1.0.10 | Complete | 2026-06-07 |
 | Full documentation audit | v1.0.11 | Complete | 2026-06-08 |
-| SMH/SOXL strategy toggle | v1.1.0 | Planned | TBD |
-| QQQ vs 200-day MA trend filter | v1.2.0 | Planned | TBD |
-| VIX percentile rank mode | v1.3.0 | Planned | TBD |
-| 12-month historical VIX sparkline | v1.4.0 | Planned | TBD |
-| Backtesting visualization | v1.5.0 | Planned | TBD |
+| Server-side VIX data pipeline (GitHub Actions) | v1.1.0 | Complete | 2026-07-09 |
+| Custom strategy builder ("Custom" tab) | v1.2.0 | Planned | TBD |
+| SMH/SOXL strategy toggle | v1.3.0 | Planned | TBD |
+| QQQ vs 200-day MA trend filter | v1.4.0 | Planned | TBD |
+| VIX percentile rank mode | v1.5.0 | Planned | TBD |
+| 12-month historical VIX sparkline | v1.6.0 | Planned | TBD |
+| Backtesting visualization | v1.7.0 | Planned | TBD |
 | Full portfolio tracker | v2.0.0 | Planned | TBD |
 
 ---
 
 ## Feature Breakdown Per Milestone
 
-### v1.1.0 — SMH/SOXL Strategy Toggle
+### v1.1.0 — Server-Side VIX Data Pipeline (GitHub Actions) — Complete
+- New scheduled GitHub Actions workflow (`update-vix.yml`) fetches VIX directly from Yahoo Finance's `v8/finance/chart/^VIX` endpoint server-side (no CORS proxy needed off-browser) and commits the result to `data/vix.json` in the repo
+- Runs on 8 fixed cron schedules per weekday, 9:45am–4:45pm ET, hourly. Fixed to EST (UTC-5) year-round rather than DST-aware — during EDT (roughly March–November) every run lands one hour later in ET (e.g. the close-of-day run fires at 5:45pm ET instead of 4:45pm). Accepted tradeoff to keep the schedule simple and low-frequency (8 runs/weekday, no polling)
+- `vix.js` updated: `fetchVIX()` now tries `data/vix.json` (same-origin, no CORS) first, falling back to the existing allorigins.win proxy only if that fails
+- Partially resolves the CORS proxy item in TRD.md's Known Technical Debt — the proxy fallback remains in `vix.js` until the new pipeline is verified stable in production, then will be removed
+- Requires `permissions: contents: write` on the workflow; failed fetches skip the commit and let the next scheduled run retry
+
+### v1.2.0 — Custom Strategy Builder ("Custom" tab)
+- New "Custom" page/tab in the navigation, positioned as its own top-level entry alongside About / Dashboard
+- Users are prompted with four fixed risk categories, seeded from the existing strategy: **Risk Off** (default BIL), **Diversify** (default SPY), **Risk On** (default QQQ), **Full Risk** (default TQQQ)
+- For each category, the user picks their own ticker to substitute in place of the default ETF
+- The app recomputes a "custom" VIX-tier allocation table using the same tier boundaries and percentage weights as the core strategy, substituting the user's chosen tickers in place of BIL/SPY/QQQ/TQQQ
+- No live fundamental/price validation of user-entered tickers — likely a free-text or small-list input; exact UX (free text vs. curated dropdown) needs to be decided before implementation
+- Selections persist in `localStorage` only, consistent with the site's no-backend model
+- Reuses existing `getTier()` / tier-boundary logic from `strategy.js`; only the ticker-to-category mapping and allocation table rendering are new
+
+### v1.3.0 — SMH/SOXL Strategy Toggle
 - Add a second allocation table: QQQ / SMH (VanEck Semiconductor) / TQQQ / SOXL (Direxion Semiconductor 3x)
 - UI toggle between "Core Strategy" and "Growth Rocket" mode on strategy.html
 - Same VIX tier boundaries; different allocations per tier
 - No changes to existing tier logic, VIX fetch, or chart infrastructure
 
-### v1.2.0 — Trend Filter
+### v1.4.0 — Trend Filter
 - Fetch QQQ 200-day moving average from Yahoo Finance historical endpoint
 - Optional toggle: if QQQ is below its 200-day MA, suppress TQQQ allocation (redistribute to QQQ)
 - Display QQQ MA relationship as a supplemental badge or indicator
 - Filter is opt-in; default behavior unchanged
 
-### v1.3.0 — VIX Percentile Rank
+### v1.5.0 — VIX Percentile Rank
 - Fetch 252 days of VIX historical data from Yahoo Finance
 - Compute current VIX's percentile rank vs. trailing year
 - Display as supplemental badge adjacent to the current VIX value on strategy.html
 - Adds context for whether the current VIX is historically high or low
 
-### v1.4.0 — Historical VIX Sparkline
+### v1.6.0 — Historical VIX Sparkline
 - Render a 12-month Chart.js line chart on strategy.html
 - Show the five tier boundary lines as horizontal reference lines
 - Mark the current VIX value with a distinct point
 - Data from Yahoo Finance historical daily endpoint via CORS proxy
 
-### v1.5.0 — Backtesting Visualization
+### v1.7.0 — Backtesting Visualization
 - Fetch multi-year daily VIX and ETF price history from Yahoo Finance
 - Simulate strategy portfolio value over time vs. SPY buy-and-hold
 - Render results as a Chart.js multi-line chart
