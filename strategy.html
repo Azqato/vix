@@ -287,6 +287,13 @@
 <script src="assets/js/strategy.js"></script>
 <script src="assets/js/chart.js"></script>
 <script>
+(function () {
+  // Wrapped in an IIFE: classic scripts share one global scope, and vix.js/
+  // strategy.js/chart.js declare top-level functions with these same names
+  // (getTier, getCachedVIX, initChart, etc). Destructuring them as top-level
+  // const here would collide with those global function declarations and
+  // throw a SyntaxError before this script ever runs. The IIFE gives this
+  // block its own scope so the local names can safely shadow the globals.
   const { getCachedVIX, fetchVIX }                 = window.VixData;
   const { getTier, getAllocation, getTierLabel, TICKERS, ALL_TIERS } = window.VixStrategy;
   const { initChart, updateChart }                 = window.VixChart;
@@ -485,6 +492,7 @@
 
     setInterval(refresh, 60_000);
   })();
+})();
 </script>
 
 </body>
