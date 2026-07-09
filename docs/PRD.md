@@ -161,5 +161,5 @@ Additional tickers: **SMH** (VanEck Semiconductor ETF), **SOXL** (Direxion Daily
 - The doughnut chart reflects the correct allocation percentages for the current VIX tier.
 - The site renders without layout breakage on screens 375px wide and wider.
 - Zero JavaScript console errors on load in production.
-- The "Built by Azqato" footer credit and Support nav link are present on both pages.
-- Risk disclaimer is visible without scrolling on both pages.
+- The "Built by Azqato" footer credit and Support nav link are present on all pages.
+- Risk disclaimer is visible without scrolling on index.html and strategy.html.

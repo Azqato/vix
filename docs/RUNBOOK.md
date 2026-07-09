@@ -143,8 +143,8 @@ VIX Strategy has no server-side monitoring because it has no server. All monitor
 | Live VIX fetch works | Open `https://azqato.github.io/vix/strategy.html`; verify status badge shows `LIVE` | Per release; after any change to `vix.js` |
 | `update-vix.yml` scheduled runs are succeeding | Check the **Actions** tab, filter by `Update VIX Data` | Weekly, or if `data/vix.js` looks stale |
 | `data/vix.js` is up to date | Open `https://azqato.github.io/vix/data/vix.js`; compare `fetchedAt` to the current time during market hours | If VIX display looks stale |
-| No console errors | Open browser DevTools → Console on both pages | Per release |
-| Both pages render correctly on mobile | Test at 375px viewport width | Per release |
+| No console errors | Open browser DevTools → Console on all three pages | Per release |
+| All pages render correctly on mobile | Test at 375px viewport width | Per release |
 | GitHub Pages deployment succeeded | Check **Actions** tab on GitHub | After every push to `main` |
 | allorigins.win is operational | Visit `https://api.allorigins.win/` directly | When STALE errors are reported by users |
 | Chart.js CDN is accessible | Visit the CDN URL directly; check `https://status.jsdelivr.com` | When chart is blank |

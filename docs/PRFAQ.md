@@ -44,7 +44,7 @@ Three conditions: (1) the VIX remains mean-reverting over the investor's time ho
 No. The disclaimer is displayed on every page. This is an educational tool for investors who have already decided to explore VIX-based allocation and want a clean, rules-based implementation.
 
 **7. Can this be forked and customized?**
-Yes. The code is open source on GitHub, intentionally simple — three JS files, one CSS file, two HTML pages, no build step. Anyone can clone it and replace the allocation table with their own strategy.
+Yes. The code is open source on GitHub, intentionally simple — four JS files, one CSS file, three HTML pages, no build step. Anyone can clone it and replace the allocation table with their own strategy.
 
 **8. What would v2.0 look like?**
 A portfolio tracker where users enter their current holdings and the app computes the delta — "sell X of BIL, buy Y of TQQQ." This requires persistent user state, which means either a backend or a complex localStorage-only UX. It is the most-requested future feature but the most architecturally complex.
@@ -54,6 +54,9 @@ Yahoo Finance's internal JSON API at `query1.finance.yahoo.com/v8/finance/chart/
 
 **10. Why not use a paid, reliable data API?**
 Most financial data APIs with SLAs require API keys, user accounts, and billing — all of which violate the no-backend, no-data-collection design constraints. The free, unauthenticated Yahoo Finance endpoint, fetched server-side on a schedule, is the best fit for a free, fully static deployment.
+
+**11. Does the Custom strategy builder verify that entered tickers are real?**
+Not yet. As of v1.2.0, ticker input is free-text, sanitized to a plausible shape (uppercase, letters/digits/dot/dash, max 10 characters) but not checked against a live quote — the UI says so explicitly. Live verification against Yahoo Finance is planned for v1.2.1, using the same fetch pattern already proven for VIX itself.
 
 ---
 
@@ -88,3 +91,6 @@ No. You enter no personal information, and nothing is stored on any server. Your
 
 **10. Is this financial advice?**
 No. This tool is for educational and informational purposes only. Past performance is not indicative of future results. Please consult a qualified financial advisor before making investment decisions, especially those involving leveraged ETFs.
+
+**11. Can I use my own ETFs instead of BIL, SPY, QQQ, and TQQQ?**
+Yes — the Custom tab lets you enter your own ticker for each of the four risk categories (Risk Off, Diversify, Risk On, Full Risk) while keeping the same VIX-tier percentages as the core strategy. Your choices are saved in your browser only. Note that tickers you enter aren't currently checked against a live quote, so double-check your symbol is correct before relying on it.
