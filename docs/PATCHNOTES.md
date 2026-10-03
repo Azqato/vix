@@ -6,6 +6,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [2.0.0] - 2026-10-02
+
+### Changed
+- Every page now redirects to its new home on Azqato Invests (azqato.com/invests/), as agreed in that site's PRD (decision D7). Each page keeps its old title and carries a canonical link, an immediate meta refresh, a `location.replace()` that keeps any `#section`, and a plain link, so each old address reaches its new page in one hop. Never reuse these addresses for other content. `index.html` goes to azqato.com/invests/vix/, and `strategy.html` and `custom.html` go straight to the Dashboard and Custom builder sections of that one VIX page.
+- `data/vix.js`, `data/vix.json` and `update-vix.yml` are unchanged: Azqato Invests reads them.
+
 ## [1.3.0] - 2026-10-02
 
 ### Added
