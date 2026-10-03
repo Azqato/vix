@@ -47,7 +47,7 @@ jobs:
           exit 1
         continue-on-error: true
 
-      - name: Write data/vix.js
+      - name: Write data/vix.js and data/vix.json
         if: steps.fetch.outcome == 'success'
         run: |
           TIMESTAMP=$(date -u -d "@${{ steps.fetch.outputs.epoch }}" +"%Y-%m-%dT%H:%M:%S.000Z")
@@ -60,16 +60,26 @@ jobs:
             "fetchedAt": $FETCHED_AT
           };
           EOF
+          # The same reading as plain JSON (added 2026-10-02 for Azqato Invests):
+          # a second source pages can fetch() from raw.githubusercontent.com,
+          # which serves files with CORS headers but won't run vix.js.
+          cat > data/vix.json <<EOF
+          {
+            "value": ${{ steps.fetch.outputs.value }},
+            "timestamp": "$TIMESTAMP",
+            "fetchedAt": $FETCHED_AT
+          }
+          EOF
 
       - name: Commit and push if changed
         if: steps.fetch.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- data/vix.js; then
+          if git diff --quiet -- data/vix.js && [ -f data/vix.json ]; then
             echo "No change in VIX value; skipping commit."
             exit 0
           fi
-          git add data/vix.js
+          git add data/vix.js data/vix.json
           git commit -m "chore: update VIX data [skip ci]"
           git push

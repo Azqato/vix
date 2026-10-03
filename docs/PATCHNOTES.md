@@ -6,6 +6,16 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.3.0] - 2026-10-02
+
+### Added
+- `data/vix.json`: the same reading as `data/vix.js`, as plain JSON. `update-vix.yml` writes both on
+every run. Azqato Invests (azqato.com/invests/) reads it from raw.githubusercontent.com as its second
+VIX source: raw GitHub serves files with CORS headers but won't run `vix.js`. This repository is now a
+data feed for Azqato Invests (its PRD Part 2, D21 and P12).
+
+---
+
 ## [1.2.1] - 2026-08-25
 
 Documentation-only release. No application code, styles, or workflow files were changed.
